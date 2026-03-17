@@ -12,7 +12,7 @@ class UserObserver
      */
     public function created(User $user): void
     {
-        $user->assignRole('customer');
+        //
     }
 
     /**
@@ -23,9 +23,11 @@ class UserObserver
         if ($user->isDirty('avatar')) {
             $oldAvatar = $user->getOriginal('avatar');
 
-            // If there was a previous avatar and it's not the same as the new one
             if ($oldAvatar && $oldAvatar !== $user->avatar) {
-                Storage::disk('s3')->delete($oldAvatar);
+                rescue(
+                    fn() =>
+                    Storage::disk('s3')->delete($oldAvatar)
+                );
             }
         }
     }
@@ -36,7 +38,10 @@ class UserObserver
     public function deleted(User $user): void
     {
         if ($user->isForceDeleting() && $user->avatar) {
-            Storage::disk('rustfs')->delete($user->avatar);
+            rescue(
+                fn() =>
+                Storage::disk('s3')->delete($user->avatar)
+            );
         }
     }
 

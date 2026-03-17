@@ -12,12 +12,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
         api: __DIR__ . '/../routes/api.php',
-        apiPrefix: 'api/v1',
+        apiPrefix: 'api',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Throwable $e, Request $request) {
@@ -28,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($e instanceof HttpException) $statusCode = $e->getStatusCode();
                 if ($e instanceof ValidationException) $statusCode = 422;
                 if ($e instanceof ModelNotFoundException) $statusCode = 404;
+                if ($e instanceof \Illuminate\Auth\AuthenticationException) $statusCode = 401;
 
                 $message = $e->getMessage() ?: 'Internal Server Error';
                 $data = null;

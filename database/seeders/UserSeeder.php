@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleType;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -17,23 +18,23 @@ class UserSeeder extends Seeder
         // Create Super Admin
         $superAdmin = User::create([
             'name' => 'Super Admin',
-            'email' => 'admin@toystore.com',
+            'email' => 'admin@example.com',
             'phone' => '081234567890',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'is_active' => true,
         ]);
-        $superAdmin->assignRole('super-admin');
+        $superAdmin->assignRole(RoleType::SUPER_ADMIN->value);
 
         // Create Test Customer
         $customer = User::create([
             'name' => 'Daren Customer',
-            'email' => 'daren@example.com',
+            'email' => 'user@example.com',
             'phone' => '081999888777',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'is_active' => true,
         ]);
-        $customer->assignRole('customer');
+        $customer->assignRole(RoleType::CUSTOMER->value);
     }
 }
