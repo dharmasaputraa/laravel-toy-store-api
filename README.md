@@ -47,6 +47,185 @@ A production-ready Laravel API boilerplate with a hybrid development setup:
 - S3-compatible storage (RustFS)
 - Docker-based infrastructure
 - Production-ready containerization
+- Clean architecture (Service + DTO + Resource)
+
+---
+
+# Code Structure
+
+This project follows a layered architecture to improve maintainability, scalability, and testability.
+
+## Directory Overview
+
+```
+app/
+├── DTOs/
+│   └── Health/
+│       └── HealthData.php
+│
+├── Services/
+│   └── HealthCheckService.php
+│
+├── Http/
+│   ├── Controllers/
+│   │   ├── Api/
+│   │   │   └── V1/
+│   │   │       └── HealthController.php
+│   │   │
+│   │   └── Web/
+│   │       └── (optional controllers)
+│   │
+│   ├── Resources/
+│   │   └── V1/
+│   │       └── HealthResource.php
+│   │
+│   └── Middleware/
+│
+├── Traits/
+│   └── ApiResponse.php
+```
+
+---
+
+## Architecture Layers
+
+### 1. Service Layer
+
+Located in:
+
+```
+app/Services
+```
+
+Responsibilities:
+
+- Business logic
+- External service checks (DB, Redis, Storage)
+- No HTTP or response formatting
+
+Example:
+
+```php
+HealthCheckService::full()
+```
+
+---
+
+### 2. DTO (Data Transfer Object)
+
+Located in:
+
+```
+app/DTOs
+```
+
+Responsibilities:
+
+- Standardize data structure between layers
+- Provide typed data objects
+- Decouple service logic from controllers
+
+Example:
+
+```php
+HealthData::make(...)
+```
+
+---
+
+### 3. API Resources
+
+Located in:
+
+```
+app/Http/Resources
+```
+
+Responsibilities:
+
+- Transform data into API responses
+- Control output format
+- Enable API versioning
+
+Example:
+
+```php
+return new HealthResource($data);
+```
+
+---
+
+### 4. Controllers
+
+Located in:
+
+```
+app/Http/Controllers/Api/V1
+```
+
+Responsibilities:
+
+- Handle HTTP requests
+- Call services
+- Return resources
+
+Controllers are intentionally kept thin.
+
+---
+
+### 5. Traits (Shared Utilities)
+
+Located in:
+
+```
+app/Traits
+```
+
+Example:
+
+- `ApiResponse` for consistent response structure
+
+---
+
+## Request Flow
+
+```
+Client Request
+      ↓
+Controller
+      ↓
+Service
+      ↓
+DTO
+      ↓
+Resource
+      ↓
+JSON Response
+```
+
+---
+
+## API Versioning
+
+API versioning is implemented at the directory level:
+
+```
+app/Http/Controllers/Api/V1
+app/Http/Resources/V1
+```
+
+Future versions:
+
+```
+V2/
+V3/
+```
+
+This allows:
+
+- Non-breaking changes
+- Independent evolution of API versions
+- Backward compatibility
 
 ---
 
@@ -81,8 +260,6 @@ npm install
 
 ### 3. Environment Setup
 
-Copy environment file:
-
 ```bash
 cp .env.example .env
 ```
@@ -110,36 +287,23 @@ AWS_USE_PATH_STYLE_ENDPOINT=true
 docker compose up -d
 ```
 
-This will start:
-
-- PostgreSQL
-- Redis
-- RustFS
-- Mailpit
-- Horizon
-- Pail
-
 ---
 
-### 5. Run Application
+### 5. Run Frontend Dev Server
 
 ```bash
 composer run dev
 ```
 
-This runs:
-
-- Vite dev server
-
 ---
 
-### 6. Serve Laravel (Manual)
+### 6. Serve Laravel
 
 ```bash
 php artisan serve
 ```
 
-Application will be available at:
+Application:
 
 ```
 http://localhost:8000
@@ -149,10 +313,6 @@ http://localhost:8000
 
 ## Logging (Pail)
 
-Pail runs inside Docker.
-
-View logs:
-
 ```bash
 docker logs -f laravel_pail
 ```
@@ -160,10 +320,6 @@ docker logs -f laravel_pail
 ---
 
 ## Queue Processing (Horizon)
-
-Horizon runs inside Docker.
-
-Access dashboard:
 
 ```
 http://localhost:8000/horizon
@@ -173,10 +329,6 @@ http://localhost:8000/horizon
 
 ## Storage (RustFS)
 
-S3-compatible storage is provided by RustFS.
-
-Default endpoint (development):
-
 ```
 http://127.0.0.1:9000
 ```
@@ -185,30 +337,23 @@ http://127.0.0.1:9000
 
 ## Health Check Endpoints
 
-### Basic Health Check
+### Basic
 
 ```
 GET /api/health
 ```
 
-Checks:
-
-- Database
-- Redis
-
----
-
-### Full Health Check
+### Full
 
 ```
 GET /api/health/full
 ```
 
-Checks:
+Includes:
 
 - Database
 - Redis
-- Storage (RustFS)
+- Object Storage (RustFS)
 - Response time
 
 ---
@@ -217,29 +362,19 @@ Checks:
 
 ### Base (`docker-compose.yml`)
 
-Contains:
-
 - PostgreSQL
 - Redis
 - RustFS
 - Mailpit
 
----
-
-### Development Override (`docker-compose.override.yml`)
-
-Adds:
+### Development (`docker-compose.override.yml`)
 
 - Horizon
 - Pail
 
----
-
 ### Production (`docker-compose.prod.yml`)
 
-Adds:
-
-- App container (PHP-FPM)
+- App (PHP-FPM)
 - Nginx
 - Horizon
 
@@ -255,7 +390,7 @@ cp .env.prod .env
 
 ---
 
-### 2. Build & Run Containers
+### 2. Run Containers
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
@@ -263,7 +398,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 ---
 
-### 3. Run Migrations
+### 3. Migrate
 
 ```bash
 docker exec -it laravel_app php artisan migrate --force
@@ -271,7 +406,7 @@ docker exec -it laravel_app php artisan migrate --force
 
 ---
 
-### 4. Optimize Application
+### 4. Optimize
 
 ```bash
 docker exec -it laravel_app php artisan optimize
@@ -281,10 +416,11 @@ docker exec -it laravel_app php artisan optimize
 
 ## Important Notes
 
-- Laravel application is intentionally not containerized in development for faster iteration.
-- Horizon and Pail are containerized to maintain production parity.
-- Redis is required for queue processing in all environments.
-- RustFS replaces traditional S3 for both development and production.
+- Application runs on host during development for faster iteration
+- Infrastructure runs entirely in Docker
+- Horizon and Pail mirror production behavior
+- Redis is required for queue processing
+- RustFS replaces traditional S3
 
 ---
 
@@ -292,19 +428,13 @@ docker exec -it laravel_app php artisan optimize
 
 ### Redis Connection Refused
 
-Ensure:
-
 ```bash
 docker ps
 ```
 
-Redis container must be running.
-
 ---
 
-### Horizon Not Processing Jobs
-
-Check:
+### Horizon Issues
 
 ```bash
 docker logs laravel_horizon
@@ -312,13 +442,13 @@ docker logs laravel_horizon
 
 ---
 
-### Storage Errors
+### Storage Issues
 
-Verify:
+Check:
 
 - `AWS_ENDPOINT`
-- `AWS_USE_PATH_STYLE_ENDPOINT=true`
-- RustFS container is healthy
+- `AWS_USE_PATH_STYLE_ENDPOINT`
+- RustFS container health
 
 ---
 
