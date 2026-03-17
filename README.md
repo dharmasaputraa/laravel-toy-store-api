@@ -106,7 +106,31 @@ Responsibilities:
 Example:
 
 ```php
-HealthCheckService::full()
+public function full(): HealthData
+    {
+        $start = microtime(true);
+
+        $services = [
+            'database' => $this->checkDatabase(),
+            'redis' => $this->checkRedis(),
+            'object_storage' => $this->checkObjectStorage(),
+        ];
+
+        $isHealthy = !in_array(false, $services, true);
+
+        return HealthData::make(
+            $isHealthy,
+            $isHealthy ? 'System is operational' : 'System degradation detected',
+            [
+                'app' => config('app.name'),
+                'env' => app()->environment(),
+                'app_version' => app()->version(),
+                'services' => $services,
+                'response_time_ms' => round((microtime(true) - $start) * 1000, 2),
+            ],
+            $isHealthy ? 200 : 503
+        );
+    }
 ```
 
 ---
@@ -128,7 +152,25 @@ Responsibilities:
 Example:
 
 ```php
-HealthData::make(...)
+class HealthData
+{
+    public function __construct(
+        public bool $success,
+        public string $message,
+        public array $data,
+        public int $statusCode = 200
+    ) {}
+
+    public static function make(
+        bool $success,
+        string $message,
+        array $data,
+        int $statusCode = 200
+    ): self {
+        return new self($success, $message, $data, $statusCode);
+    }
+}
+
 ```
 
 ---
@@ -421,34 +463,6 @@ docker exec -it laravel_app php artisan optimize
 - Horizon and Pail mirror production behavior
 - Redis is required for queue processing
 - RustFS replaces traditional S3
-
----
-
-## Common Issues
-
-### Redis Connection Refused
-
-```bash
-docker ps
-```
-
----
-
-### Horizon Issues
-
-```bash
-docker logs laravel_horizon
-```
-
----
-
-### Storage Issues
-
-Check:
-
-- `AWS_ENDPOINT`
-- `AWS_USE_PATH_STYLE_ENDPOINT`
-- RustFS container health
 
 ---
 
