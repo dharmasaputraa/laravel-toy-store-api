@@ -14,7 +14,7 @@ class UserAddressSeeder extends Seeder
      */
     public function run(): void
     {
-        $customer = User::where('email', 'daren@example.com')->first();
+        $customer = User::where('email', 'user@example.com')->first();
 
         if ($customer) {
             // Alamat Utama

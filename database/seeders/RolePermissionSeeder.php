@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleType;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -15,35 +16,26 @@ class RolePermissionSeeder extends Seeder
 
         $guard = 'api';
 
-        $rolesAndPermissions = [
-            'admin' => [
-                'manage users',
-                'manage products',
-            ],
-            'warehouse' => [
-                'manage warehouse',
-            ],
-            'customer' => [
-                'view profile',
-            ],
-        ];
-
-        $allPermissions = collect($rolesAndPermissions)->flatten()->unique();
+        $allPermissions = collect(RoleType::cases())
+            ->flatMap(fn(RoleType $role) => $role->defaultPermissions())
+            ->unique();
 
         foreach ($allPermissions as $permissionName) {
             Permission::findOrCreate($permissionName, $guard);
         }
 
-        foreach ($rolesAndPermissions as $roleName => $permissionNames) {
-            $role = Role::findOrCreate($roleName, $guard);
+        foreach (RoleType::cases() as $roleEnum) {
+            $role = Role::findOrCreate($roleEnum->value, $guard);
 
-            $permissions = Permission::whereIn('name', $permissionNames)
-                ->where('guard_name', $guard)
-                ->get();
+            $permissionNames = $roleEnum->defaultPermissions();
 
-            $role->syncPermissions($permissions);
+            if (!empty($permissionNames)) {
+                $permissions = Permission::whereIn('name', $permissionNames)
+                    ->where('guard_name', $guard)
+                    ->get();
+
+                $role->syncPermissions($permissions);
+            }
         }
-
-        Role::findOrCreate('super-admin', $guard);
     }
 }
