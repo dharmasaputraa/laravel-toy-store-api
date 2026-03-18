@@ -26,6 +26,8 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'avatar' => $this->avatar ? $disk->url($this->avatar) : null,
             'locale' => $this->locale,
+            'email_verified_at' => $this->email_verified_at,
+            'is_email_verified' => ! is_null($this->email_verified_at),
 
             'roles' => $this->roles->map(function ($role) {
                 $roleEnum = RoleType::tryFrom($role->name);

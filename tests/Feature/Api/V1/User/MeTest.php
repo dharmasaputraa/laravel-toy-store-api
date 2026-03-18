@@ -6,13 +6,12 @@ use Tests\Feature\Api\V1\Auth\AuthTestCase;
 
 class MeTest extends AuthTestCase
 {
-    protected string $baseUrl = '/api/v1/profile';
     public function test_me_success(): void
     {
         $user = $this->createUser();
 
         $response = $this->actingAsUser($user)
-            ->getJson($this->url());
+            ->getJson(route('v1.user.profile'));
 
         $response->assertOk()
             ->assertJson([
@@ -25,7 +24,7 @@ class MeTest extends AuthTestCase
 
     public function test_me_requires_auth(): void
     {
-        $this->getJson($this->url())
+        $this->getJson(route('v1.user.profile'))
             ->assertUnauthorized();
     }
 }

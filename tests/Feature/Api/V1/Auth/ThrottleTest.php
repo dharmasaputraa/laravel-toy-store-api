@@ -9,7 +9,7 @@ class ThrottleTest extends AuthTestCase
         $this->app['env'] = 'production';
 
         for ($i = 0; $i < 3; $i++) {
-            $this->postJson($this->url('register'), [
+            $this->postJson(route('v1.auth.register'), [
                 'name' => 'Test',
                 'email' => "test{$i}@example.com",
                 'password' => 'password',
@@ -17,7 +17,7 @@ class ThrottleTest extends AuthTestCase
             ]);
         }
 
-        $this->postJson($this->url('register'), [
+        $this->postJson(route('v1.auth.register'), [
             'name' => 'Test',
             'email' => 'blocked@example.com',
             'password' => 'password',
@@ -32,13 +32,13 @@ class ThrottleTest extends AuthTestCase
         $user = $this->createUser(['email' => 'test@example.com']);
 
         for ($i = 0; $i < 5; $i++) {
-            $this->postJson($this->url('login'), [
+            $this->postJson(route('v1.auth.login'), [
                 'email' => $user->email,
                 'password' => 'wrong',
             ]);
         }
 
-        $response = $this->postJson($this->url('login'), [
+        $response = $this->postJson(route('v1.auth.login'), [
             'email' => $user->email,
             'password' => 'wrong',
         ]);

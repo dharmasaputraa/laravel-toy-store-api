@@ -13,17 +13,6 @@ abstract class AuthTestCase extends TestCase
     protected $seed = true;
     protected $seeder = \Database\Seeders\RolePermissionSeeder::class;
 
-    protected string $baseUrl = '/api/v1/auth';
-
-    protected function url(?string $path = null): string
-    {
-        if (!$path) {
-            return $this->baseUrl;
-        }
-
-        return "{$this->baseUrl}/{$path}";
-    }
-
     protected function createUser(array $overrides = []): User
     {
         return User::factory()->create(array_merge([

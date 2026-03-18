@@ -6,7 +6,6 @@ use Tests\Feature\Api\V1\Auth\AuthTestCase;
 
 class UpdateProfileTest extends AuthTestCase
 {
-    protected string $baseUrl = '/api/v1/profile';
 
     public function test_update_profile_success(): void
     {
@@ -17,7 +16,7 @@ class UpdateProfileTest extends AuthTestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->putJson($this->url(), [
+            ->putJson(route('v1.user.profile.update'), [
                 'name' => 'New Name',
                 'phone' => '987654321',
                 'locale' => 'id',
@@ -47,7 +46,7 @@ class UpdateProfileTest extends AuthTestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->putJson($this->url(), [
+            ->putJson(route('v1.user.profile.update'), [
                 'name' => 'Updated Name Only',
                 'phone' => '123456789',
                 'locale' => 'en',
@@ -70,7 +69,7 @@ class UpdateProfileTest extends AuthTestCase
 
     public function test_update_profile_requires_auth(): void
     {
-        $this->putJson($this->url(), [
+        $this->putJson(route('v1.user.profile.update'), [
             'name' => 'New Name',
         ])->assertUnauthorized();
     }
@@ -83,7 +82,7 @@ class UpdateProfileTest extends AuthTestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->putJson($this->url(), [
+            ->putJson(route('v1.user.profile.update'), [
                 'name' => 'New Name',
                 'email' => 'new@example.com', // This should be ignored
             ]);
@@ -101,7 +100,7 @@ class UpdateProfileTest extends AuthTestCase
         $user = $this->createUser(['name' => 'Old Name']);
 
         $response = $this->actingAsUser($user)
-            ->putJson($this->url(), [
+            ->putJson(route('v1.user.profile.update'), [
                 'name' => 'José María González',
             ]);
 

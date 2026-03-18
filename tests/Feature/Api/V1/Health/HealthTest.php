@@ -7,11 +7,9 @@ use Tests\Feature\Api\V1\Auth\AuthTestCase;
 
 class HealthTest extends AuthTestCase
 {
-    protected string $baseUrl = '/api/v1/health';
-
     public function test_basic_health_success(): void
     {
-        $this->getJson($this->url(''))
+        $this->getJson(route('v1.health'))
             ->assertOk()
             ->assertJsonStructure([
                 'success',
@@ -25,7 +23,7 @@ class HealthTest extends AuthTestCase
 
     public function test_full_health_requires_auth(): void
     {
-        $this->getJson($this->url('full'))
+        $this->getJson(route('v1.health.full'))
             ->assertUnauthorized();
     }
 
@@ -34,7 +32,7 @@ class HealthTest extends AuthTestCase
         $user = $this->createUser();
 
         $this->actingAsUser($user)
-            ->getJson($this->url('full'))
+            ->getJson(route('v1.health.full'))
             ->assertForbidden();
     }
 
@@ -44,7 +42,7 @@ class HealthTest extends AuthTestCase
         $user->assignRole(RoleType::SUPER_ADMIN->value);
 
         $this->actingAsUser($user)
-            ->getJson($this->url('full'))
+            ->getJson(route('v1.health.full'))
             ->assertOk()
             ->assertJsonStructure([
                 'success',

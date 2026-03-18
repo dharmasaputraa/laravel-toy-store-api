@@ -9,7 +9,7 @@ class TokenTest extends AuthTestCase
         $user = $this->createUser();
 
         $response = $this->actingAsUser($user)
-            ->postJson($this->url('refresh'));
+            ->postJson(route('v1.auth.token.refresh'));
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -19,7 +19,7 @@ class TokenTest extends AuthTestCase
 
     public function test_refresh_requires_auth(): void
     {
-        $this->postJson($this->url('refresh'))
+        $this->postJson(route('v1.auth.token.refresh'))
             ->assertUnauthorized();
     }
 
@@ -29,7 +29,7 @@ class TokenTest extends AuthTestCase
         $token = $this->getToken($user);
 
         $this->withToken($token)
-            ->postJson($this->url('logout'))
+            ->postJson(route('v1.auth.token.revoke'))
             ->assertOk();
 
         $this->withToken($token)

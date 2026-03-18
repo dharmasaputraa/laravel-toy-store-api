@@ -18,7 +18,7 @@ class PasswordTest extends AuthTestCase
             ->once()
             ->andReturn(Password::RESET_LINK_SENT);
 
-        $response = $this->postJson($this->url('forgot-password'), [
+        $response = $this->postJson(route('v1.auth.password.forgot'), [
             'email' => $user->email,
         ]);
 
@@ -34,7 +34,7 @@ class PasswordTest extends AuthTestCase
         Password::shouldReceive('reset')
             ->andReturn(Password::PASSWORD_RESET);
 
-        $response = $this->postJson($this->url('reset-password'), [
+        $response = $this->postJson(route('v1.auth.password.reset'), [
             'token' => $token,
             'email' => $user->email,
             'password' => 'newpassword',

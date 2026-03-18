@@ -7,7 +7,6 @@ use Tests\Feature\Api\V1\Auth\AuthTestCase;
 
 class ChangePasswordTest extends AuthTestCase
 {
-    protected string $baseUrl = '/api/v1/profile';
 
     public function test_change_password_success(): void
     {
@@ -17,7 +16,7 @@ class ChangePasswordTest extends AuthTestCase
         $token = $this->getCustomToken($user, 'old_password');
 
         $response = $this->withToken($token)
-            ->postJson($this->url('change-password'), [
+            ->postJson(route('v1.user.password.change'), [
                 'current_password' => 'old_password',
                 'password' => 'NewPassword123!',
                 'password_confirmation' => 'NewPassword123!',
@@ -43,7 +42,7 @@ class ChangePasswordTest extends AuthTestCase
         $token = $this->getCustomToken($user, 'correct_password');
 
         $response = $this->withToken($token)
-            ->postJson($this->url('change-password'), [
+            ->postJson(route('v1.user.password.change'), [
                 'current_password' => 'wrong_password',
                 'password' => 'NewPassword123!',
                 'password_confirmation' => 'NewPassword123!',
@@ -57,7 +56,7 @@ class ChangePasswordTest extends AuthTestCase
         $user = $this->createUser();
 
         $response = $this->actingAsUser($user)
-            ->postJson($this->url('change-password'), [
+            ->postJson(route('v1.user.password.change'), [
                 'password' => 'NewPassword123!',
                 'password_confirmation' => 'NewPassword123!',
             ]);
@@ -72,7 +71,7 @@ class ChangePasswordTest extends AuthTestCase
         $token = $this->getCustomToken($user, 'old_password');
 
         $response = $this->withToken($token)
-            ->postJson($this->url('change-password'), [
+            ->postJson(route('v1.user.password.change'), [
                 'current_password' => 'old_password',
                 'password_confirmation' => 'NewPassword123!',
             ]);
@@ -87,7 +86,7 @@ class ChangePasswordTest extends AuthTestCase
         $token = $this->getCustomToken($user, 'old_password');
 
         $response = $this->withToken($token)
-            ->postJson($this->url('change-password'), [
+            ->postJson(route('v1.user.password.change'), [
                 'current_password' => 'old_password',
                 'password' => 'NewPassword123!',
             ]);
@@ -102,7 +101,7 @@ class ChangePasswordTest extends AuthTestCase
         $token = $this->getCustomToken($user, 'old_password');
 
         $response = $this->withToken($token)
-            ->postJson($this->url('change-password'), [
+            ->postJson(route('v1.user.password.change'), [
                 'current_password' => 'old_password',
                 'password' => 'NewPassword123!',
                 'password_confirmation' => 'DifferentPassword123!',
@@ -113,7 +112,7 @@ class ChangePasswordTest extends AuthTestCase
 
     public function test_change_password_requires_auth(): void
     {
-        $this->postJson($this->url('change-password'), [
+        $this->postJson(route('v1.user.password.change'), [
             'current_password' => 'old_password',
             'password' => 'NewPassword123!',
             'password_confirmation' => 'NewPassword123!',
@@ -129,7 +128,7 @@ class ChangePasswordTest extends AuthTestCase
 
         // Change password
         $response = $this->withToken($token)
-            ->postJson($this->url('change-password'), [
+            ->postJson(route('v1.user.password.change'), [
                 'current_password' => 'old_password',
                 'password' => 'NewPassword123!',
                 'password_confirmation' => 'NewPassword123!',

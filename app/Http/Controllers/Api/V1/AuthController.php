@@ -17,6 +17,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -106,5 +107,27 @@ class AuthController extends BaseApiController
         }
 
         return $this->successResponse(null, __($status));
+    }
+
+    public function verifyEmail(int $id, string $hash): JsonResponse
+    {
+        if (! URL::hasValidSignature(request())) {
+            throw ValidationException::withMessages([
+                'email' => ['Invalid or expired verification link.'],
+            ]);
+        }
+
+        $this->authService->verifyEmail($id, $hash);
+
+        return $this->successResponse(null, 'Email verified successfully');
+    }
+
+    public function resendVerificationEmail(): JsonResponse
+    {
+        $user = Auth::guard('api')->user();
+
+        $this->authService->resendVerificationEmail($user);
+
+        return $this->successResponse(null, 'Verification link sent successfully');
     }
 }

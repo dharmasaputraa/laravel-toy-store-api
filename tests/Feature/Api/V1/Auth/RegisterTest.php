@@ -17,7 +17,7 @@ class RegisterTest extends AuthTestCase
             'password_confirmation' => 'password',
         ];
 
-        $response = $this->postJson($this->url('register'), $data);
+        $response = $this->postJson(route('v1.auth.register'), $data);
 
         $response->assertCreated()
             ->assertJson([
@@ -33,7 +33,7 @@ class RegisterTest extends AuthTestCase
     public function test_register_validation(): void
     {
         $this->assertValidationError(
-            $this->postJson($this->url('register'), []),
+            $this->postJson(route('v1.auth.register'), []),
             ['name', 'email', 'password']
         );
     }
@@ -42,7 +42,7 @@ class RegisterTest extends AuthTestCase
     {
         $this->createUser(['email' => 'test@example.com']);
 
-        $response = $this->postJson($this->url('register'), [
+        $response = $this->postJson(route('v1.auth.register'), [
             'name' => 'Test',
             'email' => 'test@example.com',
             'password' => 'password',
