@@ -35,7 +35,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Welcome to the Toy Store! 🧸')
+            ->subject('Welcome to the Toy Store!')
             ->greeting('Hello, ' . $notifiable->name . '!')
             ->line('We are so excited to have you join our community.')
             ->line('Get ready to discover the best toys, exclusive discounts, and early access to our new arrivals.')
@@ -51,7 +51,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Selamat datang! Akun Anda berhasil dibuat.',
+            'message' => 'Welcome! Your account has been successfully created.',
             'user_id' => $notifiable->id
         ];
     }
