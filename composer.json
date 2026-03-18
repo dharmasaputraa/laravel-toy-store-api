@@ -12,10 +12,10 @@
         "php": "^8.2",
         "dedoc/scramble": "^0.13.15",
         "intervention/image": "^3.11",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^13.0",
         "laravel/horizon": "^5.45",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.10.1",
+        "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.32",
         "opcodesio/log-viewer": "^3.24",
         "spatie/laravel-activitylog": "^4.12",
@@ -31,7 +31,7 @@
         "laravel/telescope": "^5.18",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^13.0"
+        "phpunit/phpunit": "^12.0"
     },
     "autoload": {
         "psr-4": {
