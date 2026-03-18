@@ -86,6 +86,7 @@ class HealthCheckService
 
     private function responseTime(): float
     {
-        return round((microtime(true) - LARAVEL_START) * 1000, 2);
+        $startTime = defined('LARAVEL_START') ? LARAVEL_START : microtime(true);
+        return round((microtime(true) - $startTime) * 1000, 2);
     }
 }
