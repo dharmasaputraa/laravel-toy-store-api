@@ -1,15 +1,18 @@
 <?php
 
-namespace Tests\Feature\Api\V1\Auth;
+namespace Tests\Feature\Api\V1\User;
+
+use Tests\Feature\Api\V1\Auth\AuthTestCase;
 
 class MeTest extends AuthTestCase
 {
+    protected string $baseUrl = '/api/v1/profile';
     public function test_me_success(): void
     {
         $user = $this->createUser();
 
         $response = $this->actingAsUser($user)
-            ->getJson($this->url('me'));
+            ->getJson($this->url());
 
         $response->assertOk()
             ->assertJson([
@@ -22,7 +25,7 @@ class MeTest extends AuthTestCase
 
     public function test_me_requires_auth(): void
     {
-        $this->getJson($this->url('me'))
+        $this->getJson($this->url())
             ->assertUnauthorized();
     }
 }

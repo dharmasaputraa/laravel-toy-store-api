@@ -15,8 +15,12 @@ abstract class AuthTestCase extends TestCase
 
     protected string $baseUrl = '/api/v1/auth';
 
-    protected function url(string $path): string
+    protected function url(?string $path = null): string
     {
+        if (!$path) {
+            return $this->baseUrl;
+        }
+
         return "{$this->baseUrl}/{$path}";
     }
 

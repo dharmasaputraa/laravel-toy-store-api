@@ -33,7 +33,7 @@ class TokenTest extends AuthTestCase
             ->assertOk();
 
         $this->withToken($token)
-            ->getJson($this->url('me'))
+            ->getJson('/api/v1/profile')
             ->assertUnauthorized();
     }
 }

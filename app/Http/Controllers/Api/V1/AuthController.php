@@ -27,15 +27,6 @@ class AuthController extends BaseApiController
         protected AuthService $authService
     ) {}
 
-    public function me(): JsonResponse
-    {
-        $user = $this->authService->me();
-
-        return $this->successResponse(
-            new UserResource($user)
-        );
-    }
-
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = $this->authService->register(
