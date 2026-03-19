@@ -131,14 +131,14 @@ class AuthService
     }
 
     /**
-     * Verify the user's email address.
+     * Verify user's email address.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @param  string  $hash
      * @return void
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function verifyEmail(int $id, string $hash): void
+    public function verifyEmail(string $id, string $hash): void
     {
         /** @var User $user */
         $user = User::findOrFail($id);

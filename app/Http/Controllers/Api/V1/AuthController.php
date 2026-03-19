@@ -109,7 +109,7 @@ class AuthController extends BaseApiController
         return $this->successResponse(null, __($status));
     }
 
-    public function verifyEmail(int $id, string $hash): JsonResponse
+    public function verifyEmail(string $id, string $hash): JsonResponse
     {
         if (! URL::hasValidSignature(request())) {
             throw ValidationException::withMessages([
