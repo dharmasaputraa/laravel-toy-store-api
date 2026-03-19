@@ -87,6 +87,27 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this->hasMany(UserAddress::class);
     }
 
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    /**
+     * Check if user has a social account for a specific provider.
+     */
+    public function hasSocialAccount(string $provider): bool
+    {
+        return $this->socialAccounts()->where('provider_name', $provider)->exists();
+    }
+
+    /**
+     * Get social account for a specific provider.
+     */
+    public function getSocialAccount(string $provider): ?SocialAccount
+    {
+        return $this->socialAccounts()->where('provider_name', $provider)->first();
+    }
+
     /**
      * Send the password reset notification.
      *

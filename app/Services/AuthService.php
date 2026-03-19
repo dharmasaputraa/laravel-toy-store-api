@@ -59,7 +59,7 @@ class AuthService
         if (! $user->is_active) {
             $guard->logout();
             throw ValidationException::withMessages([
-                'email' => ['Akun dinonaktifkan.'],
+                'email' => ['Account is disabled.'],
             ]);
         }
 

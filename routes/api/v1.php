@@ -43,6 +43,12 @@ Route::prefix('auth')->name('auth.')->group(function () {
         ->middleware($loginThrottle)
         ->name('login');
 
+    // OAuth (Public)
+    Route::get('/social/{provider}/redirect', [AuthController::class, 'redirectToProvider'])
+        ->name('social.redirect');
+    Route::get('/social/{provider}/callback', [AuthController::class, 'handleProviderCallback'])
+        ->name('social.callback');
+
     // Authenticated
     Route::middleware('auth:api')->group(function () {
         Route::post('/refresh', [AuthController::class, 'refresh'])->name('token.refresh');
@@ -50,6 +56,14 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
         Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])
             ->name('email.verification.resend');
+
+        // Social Account Management
+        Route::post('/social/link', [AuthController::class, 'linkSocialAccount'])
+            ->name('social.link');
+        Route::delete('/social/unlink/{provider}', [AuthController::class, 'unlinkSocialAccount'])
+            ->name('social.unlink');
+        Route::get('/social/accounts', [AuthController::class, 'getLinkedAccounts'])
+            ->name('social.accounts');
     });
 
     // Email verification (signed URL)
