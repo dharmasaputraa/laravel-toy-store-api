@@ -11,7 +11,7 @@ class MeTest extends AuthTestCase
         $user = $this->createUser();
 
         $response = $this->actingAsUser($user)
-            ->getJson(route('v1.user.profile'));
+            ->getJson(route('v1.user.profile.me'));
 
         $response->assertOk()
             ->assertJson([
@@ -24,7 +24,7 @@ class MeTest extends AuthTestCase
 
     public function test_me_requires_auth(): void
     {
-        $this->getJson(route('v1.user.profile'))
+        $this->getJson(route('v1.user.profile.me'))
             ->assertUnauthorized();
     }
 }

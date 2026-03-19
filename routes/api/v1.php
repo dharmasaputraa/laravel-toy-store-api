@@ -3,6 +3,7 @@
 use App\Enums\RoleType;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\UserAddressController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,15 +65,20 @@ Route::prefix('auth')->name('auth.')->group(function () {
 */
 Route::middleware('auth:api')
     ->prefix('profile')
-    ->name('user.')
-    ->controller(UserController::class)
+    ->as('user.profile.')
     ->group(function () {
 
-        Route::get('/', 'me')->name('profile');
+        Route::get('/', [UserController::class, 'me'])->name('me');
 
         Route::middleware('verified')->group(function () {
-            Route::put('/', 'update')->name('profile.update');
-            Route::post('/avatar', 'uploadAvatar')->name('profile.avatar.upload');
-            Route::post('/change-password', 'changePassword')->name('password.change');
+
+            // Profile
+            Route::put('/', [UserController::class, 'update'])->name('update');
+            Route::post('/avatar', [UserController::class, 'uploadAvatar'])->name('avatar.upload');
+            Route::post('/change-password', [UserController::class, 'changePassword'])->name('password.change');
+
+            // Addresses
+            Route::apiResource('addresses', UserAddressController::class)
+                ->except(['show', 'create', 'edit']);
         });
     });
