@@ -129,4 +129,52 @@ class AuthService
             'expires_in' => $guard->factory()->getTTL() * 60,
         ];
     }
+
+    /**
+     * Verify the user's email address.
+     *
+     * @param  int  $id
+     * @param  string  $hash
+     * @return void
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function verifyEmail(int $id, string $hash): void
+    {
+        /** @var User $user */
+        $user = User::findOrFail($id);
+
+        if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
+            throw ValidationException::withMessages([
+                'email' => ['Invalid verification link.'],
+            ]);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([
+                'email' => ['Email already verified.'],
+            ]);
+        }
+
+        if ($user->markEmailAsVerified()) {
+            event(new \Illuminate\Auth\Events\Verified($user));
+        }
+    }
+
+    /**
+     * Resend the email verification notification.
+     *
+     * @param  User  $user
+     * @return void
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function resendVerificationEmail(User $user): void
+    {
+        if ($user->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([
+                'email' => ['Email already verified.'],
+            ]);
+        }
+
+        $user->sendEmailVerificationNotification();
+    }
 }

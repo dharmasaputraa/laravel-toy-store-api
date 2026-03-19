@@ -27,5 +27,8 @@ class SendWelcomeEmailListener implements ShouldQueue
     public function handle(UserRegistered $event): void
     {
         $event->user->notify(new WelcomeNotification());
+
+        // Send email verification notification
+        $event->user->sendEmailVerificationNotification();
     }
 }

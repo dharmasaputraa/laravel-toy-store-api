@@ -8,7 +8,7 @@ class LoginTest extends AuthTestCase
     {
         $user = $this->createUser();
 
-        $response = $this->postJson($this->url('login'), [
+        $response = $this->postJson(route('v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
         ]);
@@ -26,7 +26,7 @@ class LoginTest extends AuthTestCase
     {
         $user = $this->createUser();
 
-        $response = $this->postJson($this->url('login'), [
+        $response = $this->postJson(route('v1.auth.login'), [
             'email' => $user->email,
             'password' => 'wrong',
         ]);
@@ -38,7 +38,7 @@ class LoginTest extends AuthTestCase
     {
         $user = $this->createUser(['is_active' => false]);
 
-        $response = $this->postJson($this->url('login'), [
+        $response = $this->postJson(route('v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
         ]);

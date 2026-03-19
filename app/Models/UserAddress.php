@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\RoleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 class UserAddress extends Model
 {
@@ -30,5 +32,23 @@ class UserAddress extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeOwnedOrAdmin($query)
+    {
+        $user = Auth::user();
+
+        if (!$user?->isSuperAdmin()) {
+            $query->where('user_id', $user?->id);
+        }
+
+        return $query;
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->ownedOrAdmin()
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->firstOrFail();
     }
 }

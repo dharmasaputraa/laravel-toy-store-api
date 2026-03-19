@@ -13,13 +13,6 @@ abstract class AuthTestCase extends TestCase
     protected $seed = true;
     protected $seeder = \Database\Seeders\RolePermissionSeeder::class;
 
-    protected string $baseUrl = '/api/v1/auth';
-
-    protected function url(string $path): string
-    {
-        return "{$this->baseUrl}/{$path}";
-    }
-
     protected function createUser(array $overrides = []): User
     {
         return User::factory()->create(array_merge([
@@ -46,7 +39,13 @@ abstract class AuthTestCase extends TestCase
 
     protected function assertValidationError($response, array $fields)
     {
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors($fields, 'data');
+        $response->assertStatus(422);
+
+        $json = $response->json();
+
+        foreach ($fields as $field) {
+            $this->assertArrayHasKey('errors', $json, 'Response does not have errors key');
+            $this->assertArrayHasKey($field, $json['errors'], "Field '{$field}' not found in validation errors");
+        }
     }
 }

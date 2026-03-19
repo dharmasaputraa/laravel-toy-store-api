@@ -3,30 +3,83 @@
 use App\Enums\RoleType;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\UserAddressController;
+use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', [HealthController::class, 'basic']);
+/*
+|--------------------------------------------------------------------------
+| Health
+|--------------------------------------------------------------------------
+*/
 
-Route::middleware(['auth:api', 'role:' . RoleType::SUPER_ADMIN->value])->group(function () {
-    Route::get('/health/full', [HealthController::class, 'full']);
+Route::prefix('health')->name('health.')->group(function () {
+    Route::get('/basic', [HealthController::class, 'basic'])->name('basic');
+
+    Route::middleware(['auth:api', 'verified', 'role:' . RoleType::SUPER_ADMIN->value])
+        ->get('/full', [HealthController::class, 'full'])
+        ->name('full');
 });
 
-Route::prefix('auth')->group(function () {
-    // Dynamically set throttles: 100/min locally, strict limits in production
+/*
+|--------------------------------------------------------------------------
+| Auth
+|--------------------------------------------------------------------------
+*/
+Route::prefix('auth')->name('auth.')->group(function () {
+
     $strictThrottle = app()->isLocal() ? 'throttle:100,1' : 'throttle:3,1';
     $loginThrottle  = app()->isLocal() ? 'throttle:100,1' : 'throttle:30,1';
 
+    // Public (strict)
     Route::middleware($strictThrottle)->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-        Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+        Route::post('/register', [AuthController::class, 'register'])->name('register');
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.forgot');
+        Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
     });
 
-    Route::middleware($loginThrottle)->post('/login', [AuthController::class, 'login']);
+    // Login (custom throttle)
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware($loginThrottle)
+        ->name('login');
 
+    // Authenticated
     Route::middleware('auth:api')->group(function () {
-        Route::get('me', [AuthController::class, 'me']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::post('/logout', [AuthController::class, 'revokeToken']);
+        Route::post('/refresh', [AuthController::class, 'refresh'])->name('token.refresh');
+        Route::post('/revoke', [AuthController::class, 'revokeToken'])->name('token.revoke');
+
+        Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])
+            ->name('email.verification.resend');
     });
+
+    // Email verification (signed URL)
+    Route::middleware('signed')
+        ->get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+        ->name('email.verification.verify');
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| User Profile
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:api')
+    ->prefix('profile')
+    ->as('user.')
+    ->group(function () {
+
+        Route::get('/', [UserController::class, 'me'])->name('me');
+
+        Route::middleware('verified')->group(function () {
+
+            // Profile
+            Route::put('/', [UserController::class, 'update'])->name('update');
+            Route::post('/avatar', [UserController::class, 'uploadAvatar'])->name('avatar.store');
+            Route::put('/change-password', [UserController::class, 'changePassword'])->name('password.update');
+
+            // Addresses
+            Route::apiResource('addresses', UserAddressController::class)
+                ->except(['show', 'create', 'edit']);
+        });
+    });

@@ -139,4 +139,64 @@ class UserTest extends UnitTestCase
 
         $this->assertTrue($user->hasRole('customer'));
     }
+
+    /**
+     * Avatar
+     */
+    public function test_avatar_is_fillable(): void
+    {
+        $user = User::factory()->create([
+            'avatar' => 'avatars/test-avatar.jpg',
+        ]);
+
+        $this->assertSame('avatars/test-avatar.jpg', $user->avatar);
+    }
+
+    public function test_avatar_is_visible_in_array(): void
+    {
+        $user = User::factory()->make([
+            'avatar' => 'avatars/test-avatar.jpg',
+        ]);
+
+        $this->assertArrayHasKey('avatar', $user->toArray());
+        $this->assertSame('avatars/test-avatar.jpg', $user->toArray()['avatar']);
+    }
+
+    public function test_avatar_can_be_null(): void
+    {
+        $user = User::factory()->create([
+            'avatar' => null,
+        ]);
+
+        $this->assertNull($user->avatar);
+    }
+
+    public function test_avatar_can_be_updated(): void
+    {
+        $user = User::factory()->create([
+            'avatar' => 'avatars/old-avatar.jpg',
+        ]);
+
+        $user->update([
+            'avatar' => 'avatars/new-avatar.jpg',
+        ]);
+
+        $this->assertSame('avatars/new-avatar.jpg', $user->fresh()->avatar);
+    }
+
+    /**
+     * Email Verification Notification
+     */
+    public function test_sends_verify_email_notification(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $user->sendEmailVerificationNotification();
+
+        Notification::assertSentTo(
+            $user,
+            \App\Notifications\VerifyEmailNotification::class
+        );
+    }
 }
