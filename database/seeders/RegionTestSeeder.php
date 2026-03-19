@@ -22,8 +22,8 @@ class RegionTestSeeder extends Seeder
             ['code' => '11.02', 'name' => 'Kab. Aceh Selatan', 'level' => 2, 'parent_code' => '11'],
 
             // Cities for DKI Jakarta
-            ['code' => '31.01', 'name' => 'Kota Jakarta Barat', 'level' => 2, 'parent_code' => '31'],
-            ['code' => '31.02', 'name' => 'Kota Jakarta Pusat', 'level' => 2, 'parent_code' => '31'],
+            ['code' => '31.71', 'name' => 'Kota Administrasi Jakarta Pusat', 'level' => 2, 'parent_code' => '31'],
+            ['code' => '31.73', 'name' => 'Kota Administrasi Jakarta Barat', 'level' => 2, 'parent_code' => '31'],
         ];
 
         DB::table('regions')->insert($regions);

@@ -40,7 +40,7 @@ class UserAddressTest extends AuthTestCase
 
     protected function getValidCityCode2(): string
     {
-        return '31.01'; // Jakarta Barat
+        return '31.73'; // Kota Administrasi Jakarta Barat
     }
 
     /**

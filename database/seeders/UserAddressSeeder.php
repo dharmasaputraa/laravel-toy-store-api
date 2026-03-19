@@ -24,7 +24,7 @@ class UserAddressSeeder extends Seeder
                 'recipient_name' => $customer->name,
                 'phone'          => $customer->phone,
                 'province_id'    => '31', // DKI Jakarta
-                'city_id'        => '31.01', // Jakarta Barat
+                'city_id'        => '31.73', // Kota Administrasi Jakarta Barat
                 'district'       => 'Kebon Jeruk',
                 'postal_code'    => '11530',
                 'full_address'   => 'Jl. Panjang No. 123, RT 01 RW 02',
@@ -38,7 +38,7 @@ class UserAddressSeeder extends Seeder
                 'recipient_name' => 'Daren (Receptionist)',
                 'phone'          => '021555666',
                 'province_id'    => '31', // DKI Jakarta
-                'city_id'        => '31.02', // Jakarta Pusat
+                'city_id'        => '31.71', // Kota Administrasi Jakarta Pusat
                 'district'       => 'Gambir',
                 'postal_code'    => '10110',
                 'full_address'   => 'Gedung Wisma Merdeka Lt. 5, Jl. Merdeka Barat',

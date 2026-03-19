@@ -15,4 +15,12 @@ abstract class UnitTestCase extends TestCase
     {
         return \App\Models\User::factory()->create($overrides);
     }
+
+    /**
+     * Seed regions for testing
+     */
+    protected function seedRegions(): void
+    {
+        $this->seed(\Database\Seeders\RegionTestSeeder::class);
+    }
 }

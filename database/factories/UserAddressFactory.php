@@ -23,7 +23,7 @@ class UserAddressFactory extends Factory
             'recipient_name' => fake()->name(),
             'phone' => fake()->phoneNumber(),
             'province_id' => fake()->randomElement(['11', '31']),
-            'city_id' => fake()->randomElement(['11.01', '11.02', '31.01', '31.02']),
+            'city_id' => fake()->randomElement(['11.01', '11.02', '31.71', '31.73']),
             'district' => fake()->streetName(),
             'postal_code' => fake()->postcode(),
             'full_address' => fake()->address(),
