@@ -3,6 +3,7 @@
 use App\Enums\RoleType;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\RegionController;
 use App\Http\Controllers\Api\V1\UserAddressController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,16 @@ Route::prefix('auth')->name('auth.')->group(function () {
         ->name('email.verification.verify');
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| Regions (Public)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('regions')->name('regions.')->group(function () {
+    Route::get('/', [RegionController::class, 'index'])->name('index');
+    Route::get('/{code}/cities', [RegionController::class, 'cities'])->name('cities');
+});
 
 /*
 |--------------------------------------------------------------------------
