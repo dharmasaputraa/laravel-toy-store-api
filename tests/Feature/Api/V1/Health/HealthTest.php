@@ -9,7 +9,7 @@ class HealthTest extends AuthTestCase
 {
     public function test_basic_health_success(): void
     {
-        $this->getJson(route('v1.health'))
+        $this->getJson(route('v1.health.basic'))
             ->assertOk()
             ->assertJsonStructure([
                 'success',

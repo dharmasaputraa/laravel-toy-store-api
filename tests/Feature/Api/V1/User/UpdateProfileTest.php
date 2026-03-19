@@ -16,7 +16,7 @@ class UpdateProfileTest extends AuthTestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->putJson(route('v1.user.profile.update'), [
+            ->putJson(route('v1.user.update'), [
                 'name' => 'New Name',
                 'phone' => '987654321',
                 'locale' => 'id',
@@ -46,7 +46,7 @@ class UpdateProfileTest extends AuthTestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->putJson(route('v1.user.profile.update'), [
+            ->putJson(route('v1.user.update'), [
                 'name' => 'Updated Name Only',
                 'phone' => '123456789',
                 'locale' => 'en',
@@ -69,7 +69,7 @@ class UpdateProfileTest extends AuthTestCase
 
     public function test_update_profile_requires_auth(): void
     {
-        $this->putJson(route('v1.user.profile.update'), [
+        $this->putJson(route('v1.user.update'), [
             'name' => 'New Name',
         ])->assertUnauthorized();
     }
@@ -82,7 +82,7 @@ class UpdateProfileTest extends AuthTestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->putJson(route('v1.user.profile.update'), [
+            ->putJson(route('v1.user.update'), [
                 'name' => 'New Name',
                 'email' => 'new@example.com', // This should be ignored
             ]);
@@ -100,7 +100,7 @@ class UpdateProfileTest extends AuthTestCase
         $user = $this->createUser(['name' => 'Old Name']);
 
         $response = $this->actingAsUser($user)
-            ->putJson(route('v1.user.profile.update'), [
+            ->putJson(route('v1.user.update'), [
                 'name' => 'José María González',
             ]);
 

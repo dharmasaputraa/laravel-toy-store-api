@@ -155,7 +155,7 @@ class EmailVerificationTest extends AuthTestCase
         $token = $this->getToken($unverifiedUser);
 
         $response = $this->withToken($token)
-            ->getJson(route('v1.user.profile.me'));
+            ->getJson(route('v1.user.me'));
 
         $response->assertOk()
             ->assertJson([
@@ -171,7 +171,7 @@ class EmailVerificationTest extends AuthTestCase
         $token = $this->getToken($verifiedUser);
 
         $response = $this->withToken($token)
-            ->getJson(route('v1.user.profile.me'));
+            ->getJson(route('v1.user.me'));
 
         $response->assertOk();
         $verifiedUser->refresh();

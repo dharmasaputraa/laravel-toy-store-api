@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/health', [HealthController::class, 'basic'])->name('health');
+Route::prefix('health')->name('health.')->group(function () {
+    Route::get('/basic', [HealthController::class, 'basic'])->name('basic');
 
-Route::middleware(['auth:api', 'verified', 'role:' . RoleType::SUPER_ADMIN->value])
-    ->get('/health/full', [HealthController::class, 'full'])
-    ->name('health.full');
-
+    Route::middleware(['auth:api', 'verified', 'role:' . RoleType::SUPER_ADMIN->value])
+        ->get('/full', [HealthController::class, 'full'])
+        ->name('full');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -65,7 +66,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 */
 Route::middleware('auth:api')
     ->prefix('profile')
-    ->as('user.profile.')
+    ->as('user.')
     ->group(function () {
 
         Route::get('/', [UserController::class, 'me'])->name('me');
@@ -74,8 +75,8 @@ Route::middleware('auth:api')
 
             // Profile
             Route::put('/', [UserController::class, 'update'])->name('update');
-            Route::post('/avatar', [UserController::class, 'uploadAvatar'])->name('avatar.upload');
-            Route::post('/change-password', [UserController::class, 'changePassword'])->name('password.change');
+            Route::post('/avatar', [UserController::class, 'uploadAvatar'])->name('avatar.store');
+            Route::put('/change-password', [UserController::class, 'changePassword'])->name('password.update');
 
             // Addresses
             Route::apiResource('addresses', UserAddressController::class)

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Enums\RoleType;
 use App\Notifications\CustomResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -103,5 +105,25 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new \App\Notifications\VerifyEmailNotification());
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole(RoleType::SUPER_ADMIN->value);
+    }
+
+    public function is_admin(): bool
+    {
+        return $this->hasRole(RoleType::ADMIN->value);
+    }
+
+    public function is_warehouse(): bool
+    {
+        return $this->hasRole(RoleType::WAREHOUSE->value);
+    }
+
+    public function is_customer(): bool
+    {
+        return $this->hasRole(RoleType::CUSTOMER->value);
     }
 }

@@ -30,7 +30,7 @@ class UploadAvatarTest extends AuthTestCase
         $file = UploadedFile::fake()->image('avatar.jpg', 200, 200);
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), [
+            ->postJson(route('v1.user.avatar.store'), [
                 'avatar' => $file,
             ]);
 
@@ -56,7 +56,7 @@ class UploadAvatarTest extends AuthTestCase
         $file = UploadedFile::fake()->image('avatar.png', 200, 200);
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), [
+            ->postJson(route('v1.user.avatar.store'), [
                 'avatar' => $file,
             ]);
 
@@ -73,7 +73,7 @@ class UploadAvatarTest extends AuthTestCase
         $file = UploadedFile::fake()->image('avatar.webp', 200, 200);
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), [
+            ->postJson(route('v1.user.avatar.store'), [
                 'avatar' => $file,
             ]);
 
@@ -88,7 +88,7 @@ class UploadAvatarTest extends AuthTestCase
     {
         $file = UploadedFile::fake()->image('avatar.jpg', 200, 200);
 
-        $this->postJson(route('v1.user.profile.avatar.upload'), [
+        $this->postJson(route('v1.user.avatar.store'), [
             'avatar' => $file,
         ])->assertUnauthorized();
     }
@@ -98,7 +98,7 @@ class UploadAvatarTest extends AuthTestCase
         $user = $this->createUser();
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), []);
+            ->postJson(route('v1.user.avatar.store'), []);
 
         $response->assertUnprocessable();
     }
@@ -109,7 +109,7 @@ class UploadAvatarTest extends AuthTestCase
         $file = UploadedFile::fake()->create('document.pdf', 100);
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), [
+            ->postJson(route('v1.user.avatar.store'), [
                 'avatar' => $file,
             ]);
 
@@ -122,7 +122,7 @@ class UploadAvatarTest extends AuthTestCase
         $file = UploadedFile::fake()->create('avatar.gif', 100);
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), [
+            ->postJson(route('v1.user.avatar.store'), [
                 'avatar' => $file,
             ]);
 
@@ -135,7 +135,7 @@ class UploadAvatarTest extends AuthTestCase
         $file = UploadedFile::fake()->image('avatar.jpg', 200, 200)->size(3000); // 3MB
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), [
+            ->postJson(route('v1.user.avatar.store'), [
                 'avatar' => $file,
             ]);
 
@@ -150,7 +150,7 @@ class UploadAvatarTest extends AuthTestCase
         $file = UploadedFile::fake()->image('new-avatar.jpg', 200, 200);
 
         $response = $this->actingAsUser($user)
-            ->postJson(route('v1.user.profile.avatar.upload'), [
+            ->postJson(route('v1.user.avatar.store'), [
                 'avatar' => $file,
             ]);
 

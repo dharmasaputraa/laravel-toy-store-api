@@ -1,12 +1,10 @@
 <?php
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Str;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,33 +23,18 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Throwable $e, Request $request) {
-            // Intercept API routes and force standard JSON
-            if ($request->is('api/*') || $request->wantsJson()) {
 
-                $statusCode = 500;
-                if ($e instanceof HttpException) $statusCode = $e->getStatusCode();
-                if ($e instanceof ValidationException) $statusCode = 422;
-                if ($e instanceof ModelNotFoundException) $statusCode = 404;
-                if ($e instanceof \Illuminate\Auth\AuthenticationException) $statusCode = 401;
-
-                $message = $e->getMessage() ?: 'Internal Server Error';
-                $data = null;
-
-                if ($e instanceof ValidationException) {
-                    $message = 'Validation Failed';
-                    $data = $e->errors();
-                }
-
-                // Hide sensitive errors in production
-                if (!config('app.debug') && $statusCode === 500) {
-                    $message = 'Internal Server Error';
-                }
-
-                return response()->json([
-                    'success' => false,
-                    'message' => $message,
-                    'data'    => $data,
-                ], $statusCode);
+            if (!($request->is('api/*') || $request->wantsJson())) {
+                return null;
             }
+
+            $formatter = new \App\Exceptions\ApiExceptionFormatter();
+
+            $response = $formatter->format($e);
+
+            return response()->json(
+                $response['body'],
+                $response['status']
+            );
         });
     })->create();

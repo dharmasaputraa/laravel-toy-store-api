@@ -24,7 +24,7 @@ class UserAddressTest extends AuthTestCase
      */
     public function test_index_requires_authentication(): void
     {
-        $this->getJson(route('v1.user.profile.addresses.index'))
+        $this->getJson(route('v1.user.addresses.index'))
             ->assertUnauthorized();
     }
 
@@ -35,14 +35,14 @@ class UserAddressTest extends AuthTestCase
         ]);
 
         $this->actingAsUser($unverifiedUser)
-            ->getJson(route('v1.user.profile.addresses.index'))
+            ->getJson(route('v1.user.addresses.index'))
             ->assertForbidden();
     }
 
     public function test_index_returns_empty_list(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->getJson(route('v1.user.profile.addresses.index'));
+            ->getJson(route('v1.user.addresses.index'));
 
         $response->assertOk()
             ->assertJson([
@@ -64,7 +64,7 @@ class UserAddressTest extends AuthTestCase
         $otherAddress = UserAddress::factory()->create(['user_id' => $otherUser->id]);
 
         $response = $this->actingAsUser($this->user)
-            ->getJson(route('v1.user.profile.addresses.index'));
+            ->getJson(route('v1.user.addresses.index'));
 
         $response->assertOk()
             ->assertJsonCount(2, 'data');
@@ -98,7 +98,7 @@ class UserAddressTest extends AuthTestCase
         ]);
 
         $response = $this->actingAsUser($this->user)
-            ->getJson(route('v1.user.profile.addresses.index'));
+            ->getJson(route('v1.user.addresses.index'));
 
         $response->assertOk()
             ->assertJsonPath('data.0.id', $defaultAddress->id)
@@ -110,7 +110,7 @@ class UserAddressTest extends AuthTestCase
      */
     public function test_store_requires_authentication(): void
     {
-        $this->postJson(route('v1.user.profile.addresses.store'), [])
+        $this->postJson(route('v1.user.addresses.store'), [])
             ->assertUnauthorized();
     }
 
@@ -121,14 +121,14 @@ class UserAddressTest extends AuthTestCase
         ]);
 
         $this->actingAsUser($unverifiedUser)
-            ->postJson(route('v1.user.profile.addresses.store'), [])
+            ->postJson(route('v1.user.addresses.store'), [])
             ->assertForbidden();
     }
 
     public function test_store_validates_required_fields(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), []);
+            ->postJson(route('v1.user.addresses.store'), []);
 
         $this->assertValidationError($response, [
             'label',
@@ -145,7 +145,7 @@ class UserAddressTest extends AuthTestCase
     public function test_store_validates_label_max_length(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => str_repeat('a', 101),
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
@@ -162,7 +162,7 @@ class UserAddressTest extends AuthTestCase
     public function test_store_validates_recipient_name_max_length(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => str_repeat('a', 256),
                 'phone' => '08123456789',
@@ -179,7 +179,7 @@ class UserAddressTest extends AuthTestCase
     public function test_store_validates_phone_max_length(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => str_repeat('1', 21),
@@ -196,7 +196,7 @@ class UserAddressTest extends AuthTestCase
     public function test_store_validates_province_id_is_integer(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
@@ -213,7 +213,7 @@ class UserAddressTest extends AuthTestCase
     public function test_store_validates_city_id_is_integer(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
@@ -230,7 +230,7 @@ class UserAddressTest extends AuthTestCase
     public function test_store_validates_district_max_length(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
@@ -247,7 +247,7 @@ class UserAddressTest extends AuthTestCase
     public function test_store_validates_postal_code_max_length(): void
     {
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
@@ -276,7 +276,7 @@ class UserAddressTest extends AuthTestCase
         ];
 
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), $data);
+            ->postJson(route('v1.user.addresses.store'), $data);
 
         $response->assertOk()
             ->assertJson([
@@ -309,7 +309,7 @@ class UserAddressTest extends AuthTestCase
 
         // Create new default address
         $response = $this->actingAsUser($this->user)
-            ->postJson(route('v1.user.profile.addresses.store'), [
+            ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Office',
                 'recipient_name' => 'Jane Doe',
                 'phone' => '08987654321',
@@ -340,7 +340,7 @@ class UserAddressTest extends AuthTestCase
     {
         $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
 
-        $this->putJson(route('v1.user.profile.addresses.update', $address), [])
+        $this->putJson(route('v1.user.addresses.update', $address), [])
             ->assertUnauthorized();
     }
 
@@ -350,10 +350,10 @@ class UserAddressTest extends AuthTestCase
             'email_verified_at' => null,
         ]);
 
-        $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
+        $address = UserAddress::factory()->create(['user_id' => $unverifiedUser->id]);
 
         $this->actingAsUser($unverifiedUser)
-            ->putJson(route('v1.user.profile.addresses.update', $address), [])
+            ->putJson(route('v1.user.addresses.update', $address), [])
             ->assertForbidden();
     }
 
@@ -366,10 +366,10 @@ class UserAddressTest extends AuthTestCase
         $otherAddress = UserAddress::factory()->create(['user_id' => $otherUser->id]);
 
         $this->actingAsUser($this->user)
-            ->putJson(route('v1.user.profile.addresses.update', $otherAddress), [
+            ->putJson(route('v1.user.addresses.update', $otherAddress), [
                 'label' => 'Updated',
             ])
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_update_validates_required_fields(): void
@@ -377,7 +377,7 @@ class UserAddressTest extends AuthTestCase
         $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
 
         $response = $this->actingAsUser($this->user)
-            ->putJson(route('v1.user.profile.addresses.update', $address), []);
+            ->putJson(route('v1.user.addresses.update', $address), []);
 
         $this->assertValidationError($response, [
             'label',
@@ -412,7 +412,7 @@ class UserAddressTest extends AuthTestCase
         ];
 
         $response = $this->actingAsUser($this->user)
-            ->putJson(route('v1.user.profile.addresses.update', $address), $data);
+            ->putJson(route('v1.user.addresses.update', $address), $data);
 
         $response->assertOk()
             ->assertJson([
@@ -446,7 +446,7 @@ class UserAddressTest extends AuthTestCase
 
         // Update to default
         $response = $this->actingAsUser($this->user)
-            ->putJson(route('v1.user.profile.addresses.update', $address), [
+            ->putJson(route('v1.user.addresses.update', $address), [
                 'label' => $address->label,
                 'recipient_name' => $address->recipient_name,
                 'phone' => $address->phone,
@@ -484,7 +484,7 @@ class UserAddressTest extends AuthTestCase
 
         // Update without changing default status
         $response = $this->actingAsUser($this->user)
-            ->putJson(route('v1.user.profile.addresses.update', $address), [
+            ->putJson(route('v1.user.addresses.update', $address), [
                 'label' => 'Updated Label',
                 'recipient_name' => $address->recipient_name,
                 'phone' => $address->phone,
@@ -511,7 +511,7 @@ class UserAddressTest extends AuthTestCase
     {
         $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
 
-        $this->deleteJson(route('v1.user.profile.addresses.destroy', $address))
+        $this->deleteJson(route('v1.user.addresses.destroy', $address))
             ->assertUnauthorized();
     }
 
@@ -521,10 +521,10 @@ class UserAddressTest extends AuthTestCase
             'email_verified_at' => null,
         ]);
 
-        $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
+        $address = UserAddress::factory()->create(['user_id' => $unverifiedUser->id]);
 
         $this->actingAsUser($unverifiedUser)
-            ->deleteJson(route('v1.user.profile.addresses.destroy', $address))
+            ->deleteJson(route('v1.user.addresses.destroy', $address))
             ->assertForbidden();
     }
 
@@ -537,8 +537,8 @@ class UserAddressTest extends AuthTestCase
         $otherAddress = UserAddress::factory()->create(['user_id' => $otherUser->id]);
 
         $this->actingAsUser($this->user)
-            ->deleteJson(route('v1.user.profile.addresses.destroy', $otherAddress))
-            ->assertForbidden();
+            ->deleteJson(route('v1.user.addresses.destroy', $otherAddress))
+            ->assertNotFound();
     }
 
     public function test_destroy_deletes_address_successfully(): void
@@ -546,7 +546,7 @@ class UserAddressTest extends AuthTestCase
         $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
 
         $response = $this->actingAsUser($this->user)
-            ->deleteJson(route('v1.user.profile.addresses.destroy', $address));
+            ->deleteJson(route('v1.user.addresses.destroy', $address));
 
         $response->assertOk()
             ->assertJson([
