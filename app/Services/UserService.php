@@ -8,6 +8,7 @@ use App\DTOs\User\Profile\UploadAvatarData;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
@@ -19,7 +20,13 @@ class UserService
 
     public function profile(): User
     {
-        return $this->me()->load('roles');
+        $user = $this->me();
+
+        $cacheKey = "user:profile:{$user->id}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($user) {
+            return $user->load('roles');
+        });
     }
 
     public function updateProfile(UpdateProfileData $data): User
@@ -27,6 +34,9 @@ class UserService
         $user = $this->me();
 
         $user->update($data->toArray());
+
+        // Invalidate cache
+        Cache::forget("user:profile:{$user->id}");
 
         return $user->refresh();
     }
@@ -41,6 +51,9 @@ class UserService
             'avatar' => $path,
         ]);
 
+        // Invalidate cache
+        Cache::forget("user:profile:{$user->id}");
+
         return $user;
     }
 
@@ -52,6 +65,9 @@ class UserService
         $user->update([
             'password' => $data->password,
         ]);
+
+        // Invalidate cache
+        Cache::forget("user:profile:{$user->id}");
 
         // Invalidate all tokens for security (force user to login again)
         Auth::guard('api')->logout();
