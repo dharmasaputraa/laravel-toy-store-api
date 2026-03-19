@@ -5,12 +5,13 @@ namespace App\Models;
 use App\Enums\RoleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
 class UserAddress extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'user_id',
@@ -32,6 +33,16 @@ class UserAddress extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Region::class, 'province_id', 'code');
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(Region::class, 'city_id', 'code');
     }
 
     public function scopeOwnedOrAdmin($query)

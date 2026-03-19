@@ -16,6 +16,7 @@ class UserAddressService
 
         return Cache::remember($cacheKey, now()->addMinutes(60), function () use ($user) {
             return $user->addresses()
+                ->with(['province', 'city'])
                 ->orderByDesc('is_default')
                 ->latest()
                 ->get();

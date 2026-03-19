@@ -59,7 +59,7 @@ class AuthService
         if (! $user->is_active) {
             $guard->logout();
             throw ValidationException::withMessages([
-                'email' => ['Akun dinonaktifkan.'],
+                'email' => ['Account is disabled.'],
             ]);
         }
 
@@ -70,6 +70,15 @@ class AuthService
     {
         /** @var \Tymon\JWTAuth\JWTGuard $guard */
         $guard = Auth::guard('api');
+
+        $user = $guard->user();
+
+        if (! $user->is_active) {
+            $guard->logout();
+            throw ValidationException::withMessages([
+                'email' => ['Account is disabled.'],
+            ]);
+        }
 
         $newToken = $guard->refresh();
 
@@ -131,14 +140,14 @@ class AuthService
     }
 
     /**
-     * Verify the user's email address.
+     * Verify user's email address.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @param  string  $hash
      * @return void
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function verifyEmail(int $id, string $hash): void
+    public function verifyEmail(string $id, string $hash): void
     {
         /** @var User $user */
         $user = User::findOrFail($id);
