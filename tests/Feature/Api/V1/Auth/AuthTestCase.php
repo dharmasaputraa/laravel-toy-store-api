@@ -48,4 +48,12 @@ abstract class AuthTestCase extends TestCase
             $this->assertArrayHasKey($field, $json['errors'], "Field '{$field}' not found in validation errors");
         }
     }
+
+    /**
+     * Seed regions for testing
+     */
+    protected function seedRegions(): void
+    {
+        $this->seed(\Database\Seeders\RegionTestSeeder::class);
+    }
 }

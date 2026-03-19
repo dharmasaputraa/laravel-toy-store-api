@@ -35,6 +35,16 @@ class UserAddress extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Region::class, 'province_id', 'code');
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(Region::class, 'city_id', 'code');
+    }
+
     public function scopeOwnedOrAdmin($query)
     {
         $user = Auth::user();

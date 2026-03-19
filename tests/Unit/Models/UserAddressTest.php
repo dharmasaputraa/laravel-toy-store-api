@@ -11,6 +11,13 @@ class UserAddressTest extends UnitTestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Seed regions so foreign key constraints work
+        $this->seed(\Database\Seeders\RegionTestSeeder::class);
+    }
+
     /**
      * Fillable Fields
      */
@@ -41,8 +48,8 @@ class UserAddressTest extends UnitTestCase
             'label' => 'Home',
             'recipient_name' => 'John Doe',
             'phone' => '08123456789',
-            'province_id' => 1,
-            'city_id' => 1,
+            'province_id' => '11',
+            'city_id' => '11.01',
             'district' => 'Central District',
             'postal_code' => '12345',
             'full_address' => '123 Main Street',
@@ -52,8 +59,8 @@ class UserAddressTest extends UnitTestCase
         $this->assertSame('Home', $address->label);
         $this->assertSame('John Doe', $address->recipient_name);
         $this->assertSame('08123456789', $address->phone);
-        $this->assertSame(1, $address->province_id);
-        $this->assertSame(1, $address->city_id);
+        $this->assertSame('11', $address->province_id);
+        $this->assertSame('11.01', $address->city_id);
         $this->assertSame('Central District', $address->district);
         $this->assertSame('12345', $address->postal_code);
         $this->assertSame('123 Main Street', $address->full_address);
@@ -168,8 +175,8 @@ class UserAddressTest extends UnitTestCase
             'label' => 'Office',
             'recipient_name' => 'Jane Smith',
             'phone' => '08987654321',
-            'province_id' => 2,
-            'city_id' => 2,
+            'province_id' => '11',
+            'city_id' => '11.01',
             'district' => 'Business District',
             'postal_code' => '67890',
             'full_address' => '456 Business Ave',

@@ -21,6 +21,18 @@ class UserAddressResource extends JsonResource
             'phone' => $this->phone,
             'province_id' => $this->province_id,
             'city_id' => $this->city_id,
+            'province' => $this->whenLoaded('province', function () {
+                return [
+                    'id' => $this->province->code,
+                    'name' => $this->province->name,
+                ];
+            }),
+            'city' => $this->whenLoaded('city', function () {
+                return [
+                    'id' => $this->city->code,
+                    'name' => $this->city->name,
+                ];
+            }),
             'district' => $this->district,
             'postal_code' => $this->postal_code,
             'full_address' => $this->full_address,

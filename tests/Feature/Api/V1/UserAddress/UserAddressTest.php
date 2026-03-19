@@ -14,9 +14,33 @@ class UserAddressTest extends AuthTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedRegions();
         $this->user = $this->createUser([
             'email_verified_at' => now(),
         ]);
+    }
+
+    /**
+     * Helper method to get valid region codes for testing
+     */
+    protected function getValidProvinceCode(): string
+    {
+        return '11'; // Aceh
+    }
+
+    protected function getValidCityCode(): string
+    {
+        return '11.01'; // Kab. Aceh Besar
+    }
+
+    protected function getValidProvinceCode2(): string
+    {
+        return '31'; // DKI Jakarta
+    }
+
+    protected function getValidCityCode2(): string
+    {
+        return '31.01'; // Jakarta Barat
     }
 
     /**
@@ -149,8 +173,8 @@ class UserAddressTest extends AuthTestCase
                 'label' => str_repeat('a', 101),
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
-                'province_id' => 1,
-                'city_id' => 1,
+                'province_id' => $this->getValidProvinceCode(),
+                'city_id' => $this->getValidCityCode(),
                 'district' => 'Test',
                 'postal_code' => '12345',
                 'full_address' => 'Test Address',
@@ -166,8 +190,8 @@ class UserAddressTest extends AuthTestCase
                 'label' => 'Home',
                 'recipient_name' => str_repeat('a', 256),
                 'phone' => '08123456789',
-                'province_id' => 1,
-                'city_id' => 1,
+                'province_id' => $this->getValidProvinceCode(),
+                'city_id' => $this->getValidCityCode(),
                 'district' => 'Test',
                 'postal_code' => '12345',
                 'full_address' => 'Test Address',
@@ -183,8 +207,8 @@ class UserAddressTest extends AuthTestCase
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => str_repeat('1', 21),
-                'province_id' => 1,
-                'city_id' => 1,
+                'province_id' => $this->getValidProvinceCode(),
+                'city_id' => $this->getValidCityCode(),
                 'district' => 'Test',
                 'postal_code' => '12345',
                 'full_address' => 'Test Address',
@@ -193,15 +217,15 @@ class UserAddressTest extends AuthTestCase
         $this->assertValidationError($response, ['phone']);
     }
 
-    public function test_store_validates_province_id_is_integer(): void
+    public function test_store_validates_province_id_exists(): void
     {
         $response = $this->actingAsUser($this->user)
             ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
-                'province_id' => 'invalid',
-                'city_id' => 1,
+                'province_id' => '99.99',
+                'city_id' => $this->getValidCityCode(),
                 'district' => 'Test',
                 'postal_code' => '12345',
                 'full_address' => 'Test Address',
@@ -210,15 +234,15 @@ class UserAddressTest extends AuthTestCase
         $this->assertValidationError($response, ['province_id']);
     }
 
-    public function test_store_validates_city_id_is_integer(): void
+    public function test_store_validates_city_id_exists(): void
     {
         $response = $this->actingAsUser($this->user)
             ->postJson(route('v1.user.addresses.store'), [
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
-                'province_id' => 1,
-                'city_id' => 'invalid',
+                'province_id' => $this->getValidProvinceCode(),
+                'city_id' => '99.99.99',
                 'district' => 'Test',
                 'postal_code' => '12345',
                 'full_address' => 'Test Address',
@@ -234,8 +258,8 @@ class UserAddressTest extends AuthTestCase
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
-                'province_id' => 1,
-                'city_id' => 1,
+                'province_id' => $this->getValidProvinceCode(),
+                'city_id' => $this->getValidCityCode(),
                 'district' => str_repeat('a', 256),
                 'postal_code' => '12345',
                 'full_address' => 'Test Address',
@@ -251,8 +275,8 @@ class UserAddressTest extends AuthTestCase
                 'label' => 'Home',
                 'recipient_name' => 'John Doe',
                 'phone' => '08123456789',
-                'province_id' => 1,
-                'city_id' => 1,
+                'province_id' => $this->getValidProvinceCode(),
+                'city_id' => $this->getValidCityCode(),
                 'district' => 'Test',
                 'postal_code' => str_repeat('1', 11),
                 'full_address' => 'Test Address',
@@ -267,8 +291,8 @@ class UserAddressTest extends AuthTestCase
             'label' => 'Home',
             'recipient_name' => 'John Doe',
             'phone' => '08123456789',
-            'province_id' => 1,
-            'city_id' => 1,
+            'province_id' => $this->getValidProvinceCode(),
+            'city_id' => $this->getValidCityCode(),
             'district' => 'Central District',
             'postal_code' => '12345',
             'full_address' => '123 Main Street',
@@ -284,8 +308,8 @@ class UserAddressTest extends AuthTestCase
                     'label' => 'Home',
                     'recipient_name' => 'John Doe',
                     'phone' => '08123456789',
-                    'province_id' => 1,
-                    'city_id' => 1,
+                    'province_id' => $this->getValidProvinceCode(),
+                    'city_id' => $this->getValidCityCode(),
                     'district' => 'Central District',
                     'postal_code' => '12345',
                     'full_address' => '123 Main Street',
@@ -313,8 +337,8 @@ class UserAddressTest extends AuthTestCase
                 'label' => 'Office',
                 'recipient_name' => 'Jane Doe',
                 'phone' => '08987654321',
-                'province_id' => 2,
-                'city_id' => 2,
+                'province_id' => $this->getValidProvinceCode2(),
+                'city_id' => $this->getValidCityCode2(),
                 'district' => 'Business District',
                 'postal_code' => '67890',
                 'full_address' => '456 Business Ave',
@@ -403,8 +427,8 @@ class UserAddressTest extends AuthTestCase
             'label' => 'Office',
             'recipient_name' => 'Jane Doe',
             'phone' => '08987654321',
-            'province_id' => 2,
-            'city_id' => 2,
+            'province_id' => $this->getValidProvinceCode2(),
+            'city_id' => $this->getValidCityCode2(),
             'district' => 'Business District',
             'postal_code' => '67890',
             'full_address' => '456 Business Ave',

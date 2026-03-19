@@ -20,6 +20,9 @@ class UserAddressServiceCachingTest extends TestCase
     {
         parent::setUp();
 
+        // Seed regions for foreign key constraints
+        $this->seed(\Database\Seeders\RegionTestSeeder::class);
+
         $this->addressService = app(UserAddressService::class);
         $this->user = User::factory()->create();
     }
@@ -96,8 +99,8 @@ class UserAddressServiceCachingTest extends TestCase
             label: 'Home',
             recipient_name: 'John Doe',
             phone: '08123456789',
-            province_id: 1,
-            city_id: 1,
+            province_id: '11',
+            city_id: '11.01',
             district: 'Central Jakarta',
             postal_code: '12345',
             full_address: '123 Main St',
@@ -132,8 +135,8 @@ class UserAddressServiceCachingTest extends TestCase
             label: 'Office',
             recipient_name: 'Jane Doe',
             phone: '08987654321',
-            province_id: 2,
-            city_id: 2,
+            province_id: '11',
+            city_id: '11.01',
             district: 'South Jakarta',
             postal_code: '54321',
             full_address: '456 Business Ave',
