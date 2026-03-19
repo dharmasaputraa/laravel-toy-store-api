@@ -15,6 +15,7 @@ use App\Services\AuthService;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 
 class UserController extends BaseApiController
@@ -25,40 +26,44 @@ class UserController extends BaseApiController
 
     public function me(): JsonResponse
     {
-        $user = $this->userService->profile();
+        $user = $this->getAuthUser();
+        $user = $this->userService->profile($user);
 
         return $this->successResponse(
             new UserResource($user)
         );
     }
 
-    public function update(UpdateProfileRequest $request, UserService $service)
+    public function update(UpdateProfileRequest $request)
     {
+        $user = $this->getAuthUser();
         $data = UpdateProfileData::fromRequest($request);
 
-        $user = $service->updateProfile($data);
+        $user = $this->userService->updateProfile($user, $data);
 
         return $this->successResponse(
             new UserResource($user)
         );
     }
 
-    public function uploadAvatar(UploadAvatarRequest $request, UserService $service)
+    public function uploadAvatar(UploadAvatarRequest $request)
     {
+        $user = $this->getAuthUser();
         $data = UploadAvatarData::fromRequest($request);
 
-        $user = $service->uploadAvatar($data);
+        $user = $this->userService->uploadAvatar($user, $data);
 
         return $this->successResponse(
             new UserResource($user)
         );
     }
 
-    public function changePassword(ChangePasswordRequest $request, UserService $service)
+    public function changePassword(ChangePasswordRequest $request)
     {
+        $user = $this->getAuthUser();
         $data = ChangePasswordData::fromRequest($request);
 
-        $service->changePassword($data);
+        $this->userService->changePassword($user, $data);
 
         return $this->successResponse([
             'message' => 'Password changed successfully. Please login again.',

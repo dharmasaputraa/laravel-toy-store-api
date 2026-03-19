@@ -3,22 +3,15 @@
 namespace App\Services;
 
 use App\DTOs\User\Address\SaveUserAddressData;
+use App\Models\User;
 use App\Models\UserAddress;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class UserAddressService
 {
-    private function getAuthUser()
+    public function getAll(User $user): Collection
     {
-        return Auth::guard('api')->user();
-    }
-
-    public function getAll(): Collection
-    {
-        $user = $this->getAuthUser();
-
         $cacheKey = "user:addresses:{$user->id}";
 
         return Cache::remember($cacheKey, now()->addMinutes(60), function () use ($user) {
@@ -29,10 +22,8 @@ class UserAddressService
         });
     }
 
-    public function store(SaveUserAddressData $data): UserAddress
+    public function store(User $user, SaveUserAddressData $data): UserAddress
     {
-        $user = $this->getAuthUser();
-
         if ($data->is_default) {
             $user->addresses()->update(['is_default' => false]);
         }
@@ -45,10 +36,8 @@ class UserAddressService
         return $address;
     }
 
-    public function update(UserAddress $address, SaveUserAddressData $data): UserAddress
+    public function update(User $user, UserAddress $address, SaveUserAddressData $data): UserAddress
     {
-        $user = $this->getAuthUser();
-
         if ($data->is_default && ! $address->is_default) {
             $user->addresses()
                 ->where('id', '!=', $address->id)
@@ -63,10 +52,8 @@ class UserAddressService
         return $address->refresh();
     }
 
-    public function delete(UserAddress $address): void
+    public function delete(User $user, UserAddress $address): void
     {
-        $user = $this->getAuthUser();
-
         $address->delete();
 
         // Invalidate cache

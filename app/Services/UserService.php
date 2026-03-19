@@ -13,15 +13,8 @@ use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
-    public function me(): User
+    public function profile(User $user): User
     {
-        return Auth::guard('api')->user();
-    }
-
-    public function profile(): User
-    {
-        $user = $this->me();
-
         $cacheKey = "user:profile:{$user->id}";
 
         return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($user) {
@@ -29,10 +22,8 @@ class UserService
         });
     }
 
-    public function updateProfile(UpdateProfileData $data): User
+    public function updateProfile(User $user, UpdateProfileData $data): User
     {
-        $user = $this->me();
-
         $user->update($data->toArray());
 
         // Invalidate cache
@@ -41,10 +32,8 @@ class UserService
         return $user->refresh();
     }
 
-    public function uploadAvatar(UploadAvatarData $data): User
+    public function uploadAvatar(User $user, UploadAvatarData $data): User
     {
-        $user = $this->me();
-
         $path = $data->avatar->store('avatars', 's3');
 
         $user->update([
@@ -57,10 +46,8 @@ class UserService
         return $user;
     }
 
-    public function changePassword(ChangePasswordData $data): User
+    public function changePassword(User $user, ChangePasswordData $data): User
     {
-        $user = $this->me();
-
         // Update the password (Laravel will hash it automatically due to the model cast)
         $user->update([
             'password' => $data->password,

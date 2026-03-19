@@ -11,6 +11,7 @@ use App\Http\Resources\V1\UserAddressResource;
 use App\Models\UserAddress;
 use App\Services\UserAddressService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class UserAddressController extends BaseApiController
 {
@@ -20,7 +21,8 @@ class UserAddressController extends BaseApiController
 
     public function index(): JsonResponse
     {
-        $addresses = $this->addressService->getAll();
+        $user = $this->getAuthUser();
+        $addresses = $this->addressService->getAll($user);
 
         return $this->successResponse(
             UserAddressResource::collection($addresses)
@@ -29,9 +31,10 @@ class UserAddressController extends BaseApiController
 
     public function store(StoreUserAddressRequest $request): JsonResponse
     {
+        $user = $this->getAuthUser();
         $data = SaveUserAddressData::fromRequest($request);
 
-        $address = $this->addressService->store($data);
+        $address = $this->addressService->store($user, $data);
 
         return $this->successResponse(
             new UserAddressResource($address)
@@ -40,9 +43,10 @@ class UserAddressController extends BaseApiController
 
     public function update(UpdateUserAddressRequest $request, UserAddress $address): JsonResponse
     {
+        $user = $this->getAuthUser();
         $data = SaveUserAddressData::fromRequest($request);
 
-        $updatedAddress = $this->addressService->update($address, $data);
+        $updatedAddress = $this->addressService->update($user, $address, $data);
 
         return $this->successResponse(
             new UserAddressResource($updatedAddress)
@@ -51,7 +55,8 @@ class UserAddressController extends BaseApiController
 
     public function destroy(DeleteUserAddressRequest $request, UserAddress $address): JsonResponse
     {
-        $this->addressService->delete($address);
+        $user = $this->getAuthUser();
+        $this->addressService->delete($user, $address);
 
         return $this->successResponse([
             'message' => 'Address deleted successfully.',

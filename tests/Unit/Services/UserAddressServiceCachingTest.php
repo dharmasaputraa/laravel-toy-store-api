@@ -48,8 +48,8 @@ class UserAddressServiceCachingTest extends TestCase
         // Ensure cache is empty
         $this->assertNull(Cache::get($cacheKey));
 
-        // First call should cache the data
-        $result1 = $this->addressService->getAll();
+        // First call should cache data
+        $result1 = $this->addressService->getAll($this->user);
 
         // Verify cache is populated
         $this->assertNotNull(Cache::get($cacheKey));
@@ -57,9 +57,9 @@ class UserAddressServiceCachingTest extends TestCase
         $this->assertCount(3, $cachedData);
 
         // Second call should return cached data
-        $result2 = $this->addressService->getAll();
+        $result2 = $this->addressService->getAll($this->user);
 
-        // Both results should be the same
+        // Both results should be same
         $this->assertEquals($result1->count(), $result2->count());
         $this->assertEquals(3, $result2->count());
     }
@@ -73,7 +73,7 @@ class UserAddressServiceCachingTest extends TestCase
         UserAddress::factory()->count(2)->create(['user_id' => $this->user->id]);
 
         // Make the call
-        $this->addressService->getAll();
+        $this->addressService->getAll($this->user);
 
         // Check that cache exists
         $this->assertNotNull(Cache::get($cacheKey));
@@ -88,7 +88,7 @@ class UserAddressServiceCachingTest extends TestCase
 
         // Populate cache
         UserAddress::factory()->count(2)->create(['user_id' => $this->user->id]);
-        $this->addressService->getAll();
+        $this->addressService->getAll($this->user);
         $this->assertNotNull(Cache::get($cacheKey));
 
         // Store new address
@@ -104,7 +104,7 @@ class UserAddressServiceCachingTest extends TestCase
             is_default: false,
         );
 
-        $this->addressService->store($addressData);
+        $this->addressService->store($this->user, $addressData);
 
         // Verify cache is invalidated
         $this->assertNull(Cache::get($cacheKey));
@@ -124,7 +124,7 @@ class UserAddressServiceCachingTest extends TestCase
 
         // Populate cache
         $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
-        $this->addressService->getAll();
+        $this->addressService->getAll($this->user);
         $this->assertNotNull(Cache::get($cacheKey));
 
         // Update address
@@ -140,7 +140,7 @@ class UserAddressServiceCachingTest extends TestCase
             is_default: false,
         );
 
-        $this->addressService->update($address, $addressData);
+        $this->addressService->update($this->user, $address, $addressData);
 
         // Verify cache is invalidated
         $this->assertNull(Cache::get($cacheKey));
@@ -160,11 +160,11 @@ class UserAddressServiceCachingTest extends TestCase
 
         // Populate cache
         $address = UserAddress::factory()->create(['user_id' => $this->user->id]);
-        $this->addressService->getAll();
+        $this->addressService->getAll($this->user);
         $this->assertNotNull(Cache::get($cacheKey));
 
         // Delete address
-        $this->addressService->delete($address);
+        $this->addressService->delete($this->user, $address);
 
         // Verify cache is invalidated
         $this->assertNull(Cache::get($cacheKey));
@@ -182,7 +182,7 @@ class UserAddressServiceCachingTest extends TestCase
         $cacheKey = "user:addresses:{$this->user->id}";
 
         UserAddress::factory()->count(1)->create(['user_id' => $this->user->id]);
-        $this->addressService->getAll();
+        $this->addressService->getAll($this->user);
 
         // Verify exact cache key format
         $this->assertNotNull(Cache::get($cacheKey));
@@ -204,11 +204,11 @@ class UserAddressServiceCachingTest extends TestCase
         UserAddress::factory()->count(3)->create(['user_id' => $user2->id]);
 
         // Get addresses for first user
-        $this->addressService->getAll();
+        $this->addressService->getAll($this->user);
 
         // Switch to second user
         $this->actingAsUser($user2);
-        $this->addressService->getAll();
+        $this->addressService->getAll($user2);
 
         // Verify both caches exist and are separate
         $this->assertNotNull(Cache::get($cacheKey1));
@@ -235,7 +235,7 @@ class UserAddressServiceCachingTest extends TestCase
             'is_default' => false,
         ]);
 
-        $addresses = $this->addressService->getAll();
+        $addresses = $this->addressService->getAll($this->user);
 
         // Verify default address comes first
         $this->assertTrue($addresses->first()->is_default);

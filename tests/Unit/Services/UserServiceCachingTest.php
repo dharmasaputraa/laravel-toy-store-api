@@ -48,8 +48,8 @@ class UserServiceCachingTest extends TestCase
         // Ensure cache is empty
         $this->assertNull(Cache::get($cacheKey));
 
-        // First call should cache the data
-        $result1 = $this->userService->profile();
+        // First call should cache data
+        $result1 = $this->userService->profile($this->user);
 
         // Verify cache is populated
         $this->assertNotNull(Cache::get($cacheKey));
@@ -58,9 +58,9 @@ class UserServiceCachingTest extends TestCase
         $this->assertTrue($cachedData->relationLoaded('roles'));
 
         // Second call should return cached data
-        $result2 = $this->userService->profile();
+        $result2 = $this->userService->profile($this->user);
 
-        // Both results should be the same
+        // Both results should be same
         $this->assertEquals($result1->id, $result2->id);
     }
 
@@ -71,7 +71,7 @@ class UserServiceCachingTest extends TestCase
         $cacheKey = "user:profile:{$this->user->id}";
 
         // Make the call
-        $this->userService->profile();
+        $this->userService->profile($this->user);
 
         // Check that cache exists
         $this->assertNotNull(Cache::get($cacheKey));
@@ -88,7 +88,7 @@ class UserServiceCachingTest extends TestCase
         $cacheKey = "user:profile:{$this->user->id}";
 
         // Populate cache
-        $this->userService->profile();
+        $this->userService->profile($this->user);
         $this->assertNotNull(Cache::get($cacheKey));
 
         // Update profile
@@ -98,7 +98,7 @@ class UserServiceCachingTest extends TestCase
             locale: null,
         );
 
-        $this->userService->updateProfile($updateData);
+        $this->userService->updateProfile($this->user, $updateData);
 
         // Verify cache is invalidated
         $this->assertNull(Cache::get($cacheKey));
@@ -118,7 +118,7 @@ class UserServiceCachingTest extends TestCase
         $cacheKey = "user:profile:{$this->user->id}";
 
         // Populate cache
-        $this->userService->profile();
+        $this->userService->profile($this->user);
         $this->assertNotNull(Cache::get($cacheKey));
 
         // Mock file upload
@@ -130,7 +130,7 @@ class UserServiceCachingTest extends TestCase
         // Note: This test may fail if S3 is not configured,
         // but the cache invalidation logic should still work
         try {
-            $this->userService->uploadAvatar($uploadData);
+            $this->userService->uploadAvatar($this->user, $uploadData);
 
             // Verify cache is invalidated
             $this->assertNull(Cache::get($cacheKey));
@@ -147,7 +147,7 @@ class UserServiceCachingTest extends TestCase
         $cacheKey = "user:profile:{$this->user->id}";
 
         // Populate cache
-        $this->userService->profile();
+        $this->userService->profile($this->user);
         $this->assertNotNull(Cache::get($cacheKey));
 
         // Change password
@@ -157,9 +157,9 @@ class UserServiceCachingTest extends TestCase
         );
 
         // Note: changePassword() will try to logout which may throw JWTException in unit tests
-        // but the cache should be invalidated before that happens
+        // but, cache should be invalidated before that happens
         try {
-            $this->userService->changePassword($passwordData);
+            $this->userService->changePassword($this->user, $passwordData);
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             // Expected in unit tests without proper JWT setup
         }
@@ -175,7 +175,7 @@ class UserServiceCachingTest extends TestCase
         $cacheKey = "user:profile:{$this->user->id}";
 
         // Call profile
-        $result = $this->userService->profile();
+        $result = $this->userService->profile($this->user);
 
         // Verify roles are loaded
         $this->assertTrue($result->relationLoaded('roles'));
@@ -193,7 +193,7 @@ class UserServiceCachingTest extends TestCase
 
         $cacheKey = "user:profile:{$this->user->id}";
 
-        $this->userService->profile();
+        $this->userService->profile($this->user);
 
         // Verify exact cache key format
         $this->assertNotNull(Cache::get($cacheKey));
@@ -212,11 +212,11 @@ class UserServiceCachingTest extends TestCase
         $cacheKey2 = "user:profile:{$user2->id}";
 
         // Get profile for both users
-        $this->userService->profile();
+        $this->userService->profile($this->user);
 
         // Switch to second user
         $this->actingAsUser($user2);
-        $this->userService->profile();
+        $this->userService->profile($user2);
 
         // Verify both caches exist and are separate
         $this->assertNotNull(Cache::get($cacheKey1));
