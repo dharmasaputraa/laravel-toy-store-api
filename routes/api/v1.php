@@ -50,7 +50,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
         ->name('social.callback');
 
     // Authenticated
-    Route::middleware('auth:api')->group(function () {
+    Route::middleware(['auth:api', 'active'])->group(function () {
         Route::post('/refresh', [AuthController::class, 'refresh'])->name('token.refresh');
         Route::post('/revoke', [AuthController::class, 'revokeToken'])->name('token.revoke');
 
@@ -78,7 +78,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 | User Profile
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth:api')
+Route::middleware(['auth:api', 'active'])
     ->prefix('profile')
     ->as('user.')
     ->group(function () {

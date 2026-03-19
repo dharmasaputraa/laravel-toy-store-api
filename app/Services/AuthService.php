@@ -71,6 +71,15 @@ class AuthService
         /** @var \Tymon\JWTAuth\JWTGuard $guard */
         $guard = Auth::guard('api');
 
+        $user = $guard->user();
+
+        if (! $user->is_active) {
+            $guard->logout();
+            throw ValidationException::withMessages([
+                'email' => ['Account is disabled.'],
+            ]);
+        }
+
         $newToken = $guard->refresh();
 
         return $this->respondWithToken($newToken);
