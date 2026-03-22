@@ -10,7 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\User\Profile\ChangePasswordRequest;
 use App\Http\Requests\V1\User\Profile\UpdateProfileRequest;
 use App\Http\Requests\V1\User\Profile\UploadAvatarRequest;
-use App\Http\Resources\V1\UserResource;
+use App\Http\Resources\V1\User\UserResource;
 use App\Services\AuthService;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;

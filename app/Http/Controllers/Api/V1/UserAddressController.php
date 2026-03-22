@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\V1\User\Address\DeleteUserAddressRequest;
 use App\Http\Requests\V1\User\Address\StoreUserAddressRequest;
 use App\Http\Requests\V1\User\Address\UpdateUserAddressRequest;
-use App\Http\Resources\V1\UserAddressResource;
+use App\Http\Resources\V1\User\UserAddressResource;
 use App\Models\UserAddress;
 use App\Services\UserAddressService;
 use Illuminate\Http\JsonResponse;

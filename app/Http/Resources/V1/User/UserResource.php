@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\V1;
+namespace App\Http\Resources\V1\User;
 
 use App\Enums\RoleType;
 use Illuminate\Http\Request;
