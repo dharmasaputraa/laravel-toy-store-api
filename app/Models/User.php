@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
@@ -157,6 +158,10 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, HasMe
 
     public function getAvatarUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('avatar') ?: null;
+        return Cache::tags(['users', 'avatar'])->remember(
+            "user:avatar:{$this->id}",
+            now()->addHours(24),
+            fn() => $this->getFirstMediaUrl('avatar') ?: null
+        );
     }
 }
