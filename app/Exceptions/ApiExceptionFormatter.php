@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -68,6 +69,12 @@ class ApiExceptionFormatter
             $message = 'Method not allowed';
         }
 
+        // Category Exception
+        elseif ($e instanceof CircularCategoryException) {
+            $status = 422;
+            $message = $e->getMessage();
+        }
+
         // Other HTTP Exception
         elseif ($e instanceof HttpException) {
             $status = $e->getStatusCode();
@@ -82,6 +89,8 @@ class ApiExceptionFormatter
 
         // Fallback 500
         if ($status === 500) {
+            Log::error($e);
+
             $message = config('app.debug')
                 ? $e->getMessage()
                 : 'Internal Server Error';
@@ -92,6 +101,7 @@ class ApiExceptionFormatter
             'body' => [
                 'success' => false,
                 'message' => $message,
+                'data' => null,
                 'errors' => $errors,
             ],
         ];

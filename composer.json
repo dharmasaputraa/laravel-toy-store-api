@@ -20,6 +20,7 @@
         "league/flysystem-aws-s3-v3": "^3.32",
         "opcodesio/log-viewer": "^3.24",
         "spatie/laravel-activitylog": "^4.12",
+        "spatie/laravel-medialibrary": "^11.21",
         "spatie/laravel-permission": "^7.2",
         "spatie/laravel-query-builder": "^7.0",
         "tymon/jwt-auth": "^2.3"

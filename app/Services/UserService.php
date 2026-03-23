@@ -34,16 +34,14 @@ class UserService
 
     public function uploadAvatar(User $user, UploadAvatarData $data): User
     {
-        $path = $data->avatar->store('avatars', 's3');
-
-        $user->update([
-            'avatar' => $path,
-        ]);
+        $user
+            ->addMedia($data->avatar)
+            ->toMediaCollection('avatar'); // sesuai collection di model
 
         // Invalidate cache
         Cache::forget("user:profile:{$user->id}");
 
-        return $user;
+        return $user->refresh();
     }
 
     public function changePassword(User $user, ChangePasswordData $data): User

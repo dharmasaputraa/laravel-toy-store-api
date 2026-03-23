@@ -2,108 +2,106 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\DTOs\CategoryDTO;
 use App\Http\Controllers\Api\BaseApiController;
-use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\V1\Category\StoreCategoryRequest;
+use App\Http\Requests\V1\Category\UpdateCategoryRequest;
+use App\Http\Requests\V1\Category\UpdateCategoryParentRequest;
+use App\Http\Requests\V1\Category\UpdateCategoryStatusRequest;
+use App\Http\Requests\V1\Category\UploadCategoryImageRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\CategoryService;
+use App\DTOs\Category\CategoryData;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CategoryController extends BaseApiController
 {
     public function __construct(
-        private readonly CategoryService $categoryService
+        protected CategoryService $service
     ) {}
-
-    public function index(): JsonResponse
-    {
-        // Mengambil bentuk tree (hierarki)
-        $categories = $this->categoryService->getCategoryTree();
-
-        return response()->json([
-            'data' => CategoryResource::collection($categories)
-        ]);
-    }
 
     public function store(StoreCategoryRequest $request): JsonResponse
     {
-        // 1. Validasi -> DTO
-        $dto = CategoryDTO::fromRequest($request);
+        $category = $this->service->store(
+            CategoryData::fromRequest($request)
+        );
 
-        // 2. Eksekusi Service
-        $category = $this->categoryService->createCategory($dto);
-
-        // 3. Kembalikan Response
-        return response()->json([
-            'message' => 'Kategori berhasil dibuat.',
-            'data' => new CategoryResource($category)
-        ], 201);
+        return $this->successResponse(
+            new CategoryResource($category),
+            'Category created',
+            201
+        );
     }
 
-    public function show(Category $category): JsonResponse
+    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
-        $category->load('childrenRecursive'); // Load tree spesifik untuk node ini
+        $category = $this->service->update(
+            $category,
+            CategoryData::fromRequest($request)
+        );
 
-        return response()->json([
-            'data' => new CategoryResource($category)
-        ]);
+        return $this->successResponse(
+            new CategoryResource($category),
+            'Category updated'
+        );
     }
 
-    // /**
-    //  * Display a listing of the resource.
-    //  */
-    // public function index()
-    // {
-    //     //
-    // }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function updateParent(UpdateCategoryParentRequest $request, Category $category): JsonResponse
     {
-        //
+        $category = $this->service->updateParent(
+            $category,
+            $request->parent_id
+        );
+
+        return $this->successResponse(
+            new CategoryResource($category),
+            'Category parent updated'
+        );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    // public function store(Request $request)
-    // {
-    //     //
-    // }
-
-    /**
-     * Display the specified resource.
-     */
-    // public function show(Category $category)
-    // {
-    //     //
-    // }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Category $category)
+    public function updateStatus(UpdateCategoryStatusRequest $request, Category $category): JsonResponse
     {
-        //
+        $category = $this->service->updateStatus(
+            $category,
+            $request->is_active
+        );
+
+        return $this->successResponse(
+            new CategoryResource($category),
+            'Category status updated'
+        );
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Category $category)
+    public function updateImage(UploadCategoryImageRequest $request, Category $category): JsonResponse
     {
-        //
+        $category = $this->service->updateImage(
+            $category,
+            $request->file('image')
+        );
+
+        return $this->successResponse(
+            new CategoryResource($category),
+            'Category image updated'
+        );
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Category $category)
+    public function destroy(Category $category): JsonResponse
     {
-        //
+        $this->service->delete($category);
+
+        return $this->successResponse(
+            null,
+            'Category deleted'
+        );
+    }
+
+    public function tree(): JsonResponse
+    {
+        $categories = $this->service->getTree();
+
+        return $this->successResponse(
+            CategoryResource::collection($categories),
+            'Category tree fetched'
+        );
     }
 }

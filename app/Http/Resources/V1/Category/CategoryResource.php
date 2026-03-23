@@ -15,16 +15,14 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'image_url' => $this->image ? asset('storage/' . $this->image) : null,
+            'image_url' => $this->image_url,
             'sort_order' => $this->sort_order,
             'is_active' => $this->is_active,
-            'created_at' => $this->created_at->toIso8601String(),
+            'created_at' => $this->created_at,
 
-            // Akan me-render children secara rekursif jika relasi di-load
-            'children' => CategoryResource::collection($this->whenLoaded('childrenRecursive')),
-
-            // Atau jika hanya me-load children 1 level
-            // 'children' => CategoryResource::collection($this->whenLoaded('children')),
+            'children' => CategoryResource::collection(
+                $this->whenLoaded('childrenRecursive')
+            ),
         ];
     }
 }

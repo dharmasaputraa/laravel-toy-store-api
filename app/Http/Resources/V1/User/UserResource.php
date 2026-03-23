@@ -17,17 +17,12 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('s3');
-
-        $avatar = $this->avatar ? $this->getCachedAvatarUrl($this->avatar, $disk) : null;
-
         return [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
-            'avatar' => $avatar,
+            'avatar' => $this->avatar_url,
             'is_active' => (bool) $this->is_active,
             'locale' => $this->locale,
             'email_verified_at' => $this->email_verified_at,
@@ -42,18 +37,6 @@ class UserResource extends JsonResource
     }
 
     /**
-     * Get cached avatar URL to reduce S3 API calls
-     */
-    private function getCachedAvatarUrl(string $avatarPath, mixed $disk): string
-    {
-        $cacheKey = "user:avatar:{$avatarPath}";
-
-        return Cache::remember($cacheKey, now()->addHours(24), function () use ($avatarPath, $disk) {
-            return $disk->url($avatarPath);
-        });
-    }
-
-    /**
      * Get cached role transformation to reduce enum lookups
      */
     private function getCachedRoleData(mixed $role): array
@@ -65,7 +48,7 @@ class UserResource extends JsonResource
 
             return [
                 'value' => $role->name,
-                'label' => $roleEnum?->label() ?? 'Tidak diketahui',
+                'label' => $roleEnum?->label() ?? 'Unknown',
             ];
         });
     }

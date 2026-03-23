@@ -2,6 +2,7 @@
 
 use App\Enums\RoleType;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\RegionController;
 use App\Http\Controllers\Api\V1\UserAddressController;
@@ -108,3 +109,17 @@ Route::middleware(['auth:api', 'active'])
                 ->except(['show', 'create', 'edit']);
         });
     });
+
+
+Route::prefix('categories')->group(function () {
+
+    Route::get('/tree', [CategoryController::class, 'tree']);
+
+    Route::post('/', [CategoryController::class, 'store']);
+    Route::patch('/{category}', [CategoryController::class, 'update']);
+    Route::delete('/{category}', [CategoryController::class, 'destroy']);
+
+    Route::patch('/{category}/parent', [CategoryController::class, 'updateParent']);
+    Route::patch('/{category}/status', [CategoryController::class, 'updateStatus']);
+    Route::post('/{category}/image', [CategoryController::class, 'updateImage']);
+});

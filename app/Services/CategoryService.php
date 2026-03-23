@@ -2,93 +2,120 @@
 
 namespace App\Services;
 
-use App\DTOs\CategoryDTO;
+use App\DTOs\Category\CategoryData;
+use App\Exceptions\CircularCategoryException;
 use App\Models\Category;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class CategoryService
 {
-    public function createCategory(CategoryDTO $dto): Category
+    public function store(CategoryData $data): Category
     {
-        return DB::transaction(function () use ($dto) {
-            $category = new Category();
-            $category->name = $dto->name;
-            $category->slug = $this->generateUniqueSlug($dto->name);
-            $category->parent_id = $dto->parentId;
-            $category->description = $dto->description;
-            $category->sort_order = $dto->sortOrder;
-            $category->is_active = $dto->isActive;
+        return DB::transaction(function () use ($data) {
 
-            // Logic upload image bisa ditaruh di sini atau di FileUploadService terpisah
-            if ($dto->image) {
-                $category->image = $dto->image;
-            }
+            $category = Category::create($data->toArray());
 
-            $category->save();
+            $this->clearCache();
 
             return $category;
         });
     }
 
-    public function updateCategory(Category $category, CategoryDTO $dto): Category
+    public function update(Category $category, CategoryData $data): Category
     {
-        return DB::transaction(function () use ($category, $dto) {
-            // Cek circular dependency: Category tidak boleh menjadi child dari dirinya sendiri
-            if ($dto->parentId === $category->id) {
-                throw new \InvalidArgumentException('Kategori tidak boleh menjadi parent untuk dirinya sendiri.');
-            }
+        return DB::transaction(function () use ($category, $data) {
 
-            $category->name = $dto->name;
-            // Update slug jika nama berubah
-            if ($category->isDirty('name')) {
-                $category->slug = $this->generateUniqueSlug($dto->name, $category->id);
-            }
+            $category->update($data->toArray());
 
-            $category->parent_id = $dto->parentId;
-            $category->description = $dto->description;
-            $category->sort_order = $dto->sortOrder;
-            $category->is_active = $dto->isActive;
+            $this->clearCache();
 
-            if ($dto->image) {
-                $category->image = $dto->image;
-            }
-
-            $category->save();
-
-            return $category;
+            return $category->refresh();
         });
     }
 
-    // Mendapatkan struktur tree/hierarki penuh
-    public function getCategoryTree()
+    public function updateParent(Category $category, ?string $parentId): Category
     {
-        return Category::whereNull('parent_id')
-            ->with('childrenRecursive')
-            ->orderBy('sort_order')
-            ->get();
+        return DB::transaction(function () use ($category, $parentId) {
+
+            if ($this->isCircular($category, $parentId)) {
+                throw new CircularCategoryException();
+            }
+
+            $category->update([
+                'parent_id' => $parentId
+            ]);
+
+            $this->clearCache();
+
+            return $category->refresh();
+        });
     }
 
-    private function generateUniqueSlug(string $name, ?string $excludeId = null): string
+    public function updateStatus(Category $category, bool $status): Category
     {
-        $slug = Str::slug($name);
-        $originalSlug = $slug;
-        $count = 1;
+        $category->update(['is_active' => $status]);
 
-        $query = Category::where('slug', $slug);
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
-        }
+        $this->clearCache();
 
-        while ($query->exists()) {
-            $slug = "{$originalSlug}-{$count}";
-            $query = Category::where('slug', $slug);
-            if ($excludeId) {
-                $query->where('id', '!=', $excludeId);
+        return $category;
+    }
+
+    public function updateImage(Category $category, $file): Category
+    {
+        $category
+            ->addMedia($file)
+            ->toMediaCollection('image', 's3');
+
+        Cache::tags(['categories', 'image'])->flush();
+
+        return $category->refresh();
+    }
+
+    public function delete(Category $category): void
+    {
+        DB::transaction(function () use ($category) {
+
+            $category->delete();
+
+            $this->clearCache();
+        });
+    }
+
+    public function getTree()
+    {
+        return Cache::tags(['categories', 'tree'])->remember(
+            'category:tree',
+            now()->addDay(),
+            function () {
+                return Category::with('childrenRecursive')
+                    ->whereNull('parent_id')
+                    ->orderBy('sort_order')
+                    ->get();
             }
-            $count++;
+        );
+    }
+
+    private function clearCache(): void
+    {
+        Cache::tags(['categories'])->flush();
+    }
+
+    private function isCircular(Category $category, ?string $parentId): bool
+    {
+        if (!$parentId) return false;
+
+        if ($category->id === $parentId) return true;
+
+        $parent = Category::find($parentId);
+
+        while ($parent) {
+            if ($parent->id === $category->id) {
+                return true;
+            }
+            $parent = $parent->parent;
         }
 
-        return $slug;
+        return false;
     }
 }

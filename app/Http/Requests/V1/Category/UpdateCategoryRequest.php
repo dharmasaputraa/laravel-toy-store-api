@@ -1,27 +1,27 @@
 <?php
 
-
 namespace App\Http\Requests\V1\Category;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreCategoryRequest extends FormRequest
+class UpdateCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', \App\Models\Category::class);
+        $category = $this->route('category');
+        return $this->user()->can('update', $category);
     }
 
     public function rules(): array
     {
+        $id = $this->route('category')->id;
+
         return [
-            'parent_id' => ['nullable', 'exists:categories,id'],
-            'name' => ['required'],
-            'slug' => ['required', 'unique:categories,slug'],
+            'name' => ['sometimes'],
+            'slug' => ["sometimes", "unique:categories,slug,$id"],
             'description' => ['nullable'],
             'sort_order' => ['integer'],
-            'is_active' => ['boolean'],
         ];
     }
 }
