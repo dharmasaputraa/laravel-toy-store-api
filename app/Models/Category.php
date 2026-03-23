@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\HasFlexibleRouteBinding;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Category extends Model implements HasMedia
 {
-    use HasUuids, InteractsWithMedia;
+    use HasFactory, HasUuids, InteractsWithMedia, HasFlexibleRouteBinding;
 
     protected $fillable = [
         'parent_id',
@@ -21,6 +23,11 @@ class Category extends Model implements HasMedia
         'description',
         'sort_order',
         'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
     ];
 
     public function registerMediaCollections(): void

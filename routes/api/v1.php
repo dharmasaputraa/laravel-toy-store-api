@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('health')->name('health.')->group(function () {
     Route::get('/basic', [HealthController::class, 'basic'])->name('basic');
 
-    Route::middleware(['auth:api', 'verified', 'role:' . RoleType::SUPER_ADMIN->value])
+    Route::middleware(['auth:api', 'verified', 'active', 'role:' . RoleType::SUPER_ADMIN->value]) // Nanti Ganti dengan permission: view-full-health
         ->get('/full', [HealthController::class, 'full'])
         ->name('full');
 });
@@ -110,16 +110,22 @@ Route::middleware(['auth:api', 'active'])
         });
     });
 
+/*
+|--------------------------------------------------------------------------
+| Categories (Public)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('categories')->as('categories.')->group(function () {
 
-Route::prefix('categories')->group(function () {
+    Route::get('/tree', [CategoryController::class, 'tree'])->name('tree');
 
-    Route::get('/tree', [CategoryController::class, 'tree']);
+    Route::middleware(['auth:api', 'verified', 'active', 'role:' . RoleType::SUPER_ADMIN->value])->group(function () { // Nanti Ganti dengan permission: manage-categories
+        Route::post('/', [CategoryController::class, 'store'])->name('store');
+        Route::patch('/{category}', [CategoryController::class, 'update'])->name('update');
+        Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
 
-    Route::post('/', [CategoryController::class, 'store']);
-    Route::patch('/{category}', [CategoryController::class, 'update']);
-    Route::delete('/{category}', [CategoryController::class, 'destroy']);
-
-    Route::patch('/{category}/parent', [CategoryController::class, 'updateParent']);
-    Route::patch('/{category}/status', [CategoryController::class, 'updateStatus']);
-    Route::post('/{category}/image', [CategoryController::class, 'updateImage']);
+        Route::patch('/{category}/parent', [CategoryController::class, 'updateParent'])->name('parent.update');
+        Route::patch('/{category}/status', [CategoryController::class, 'updateStatus'])->name('status.update');
+        Route::post('/{category}/image', [CategoryController::class, 'updateImage'])->name('image.update');
+    });
 });

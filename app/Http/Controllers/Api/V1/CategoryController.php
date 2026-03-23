@@ -8,7 +8,7 @@ use App\Http\Requests\V1\Category\UpdateCategoryRequest;
 use App\Http\Requests\V1\Category\UpdateCategoryParentRequest;
 use App\Http\Requests\V1\Category\UpdateCategoryStatusRequest;
 use App\Http\Requests\V1\Category\UploadCategoryImageRequest;
-use App\Http\Resources\CategoryResource;
+use App\Http\Resources\V1\Category\CategoryResource;
 use App\Models\Category;
 use App\Services\CategoryService;
 use App\DTOs\Category\CategoryData;

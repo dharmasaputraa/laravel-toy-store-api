@@ -7,6 +7,7 @@ use App\Exceptions\CircularCategoryException;
 use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CategoryService
 {
@@ -65,7 +66,10 @@ class CategoryService
     {
         $category
             ->addMedia($file)
-            ->toMediaCollection('image', 's3');
+            ->usingFileName(
+                Str::slug($category->slug) . '-' . Str::uuid() . '.' . $file->getClientOriginalExtension()
+            )
+            ->toMediaCollection('image');
 
         Cache::tags(['categories', 'image'])->flush();
 
