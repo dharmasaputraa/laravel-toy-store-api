@@ -19,6 +19,8 @@ class UserAddressResource extends JsonResource
             'label' => $this->label,
             'recipient_name' => $this->recipient_name,
             'phone' => $this->phone,
+            'province_id' => $this->province_id,
+            'city_id' => $this->city_id,
             'province' => $this->whenLoaded('province', function () {
                 return [
                     'id' => $this->province->code,

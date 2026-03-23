@@ -31,10 +31,14 @@ class UserService
 
     public function uploadAvatar(User $user, UploadAvatarData $data): User
     {
-        $user
+        $media = $user
             ->addMedia($data->avatar)
             ->toMediaCollection('avatar');
 
+        // Update avatar column with the media file path
+        $user->update(['avatar' => $media->getPathRelativeToRoot()]);
+
+        $this->clearCache($user);
         Cache::tags(['users', 'avatar'])->flush();
 
         return $user->refresh();
@@ -53,7 +57,7 @@ class UserService
         return $user->refresh();
     }
 
-    private function clearCache(): void
+    private function clearCache(User $user): void
     {
         Cache::tags(['users'])->flush();
     }

@@ -45,15 +45,15 @@ class UserServiceCachingTest extends TestCase
 
         $cacheKey = "user:profile:{$this->user->id}";
 
-        // Ensure cache is empty
-        $this->assertNull(Cache::get($cacheKey));
+        // Ensure cache is empty (need to use tags to check)
+        $this->assertNull(Cache::tags(['users'])->get($cacheKey));
 
         // First call should cache data
         $result1 = $this->userService->profile($this->user);
 
-        // Verify cache is populated
-        $this->assertNotNull(Cache::get($cacheKey));
-        $cachedData = Cache::get($cacheKey);
+        // Verify cache is populated (need to use tags to retrieve)
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey));
+        $cachedData = Cache::tags(['users'])->get($cacheKey);
         $this->assertEquals($this->user->id, $cachedData->id);
         $this->assertTrue($cachedData->relationLoaded('roles'));
 
@@ -73,12 +73,12 @@ class UserServiceCachingTest extends TestCase
         // Make the call
         $this->userService->profile($this->user);
 
-        // Check that cache exists
-        $this->assertNotNull(Cache::get($cacheKey));
+        // Check that cache exists (need to use tags to check)
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey));
 
         // We can't easily test exact TTL without mocking time,
         // but we can verify the cache structure
-        $this->assertTrue(Cache::has($cacheKey));
+        $this->assertTrue(Cache::tags(['users'])->has($cacheKey));
     }
 
     public function test_update_profile_invalidates_cache(): void
@@ -89,7 +89,7 @@ class UserServiceCachingTest extends TestCase
 
         // Populate cache
         $this->userService->profile($this->user);
-        $this->assertNotNull(Cache::get($cacheKey));
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey));
 
         // Update profile
         $updateData = new \App\DTOs\User\Profile\UpdateProfileData(
@@ -100,8 +100,8 @@ class UserServiceCachingTest extends TestCase
 
         $this->userService->updateProfile($this->user, $updateData);
 
-        // Verify cache is invalidated
-        $this->assertNull(Cache::get($cacheKey));
+        // Verify cache is invalidated (need to use tags to check)
+        $this->assertNull(Cache::tags(['users'])->get($cacheKey));
 
         // Verify user was updated
         $this->assertDatabaseHas('users', [
@@ -119,7 +119,7 @@ class UserServiceCachingTest extends TestCase
 
         // Populate cache
         $this->userService->profile($this->user);
-        $this->assertNotNull(Cache::get($cacheKey));
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey));
 
         // Mock file upload
         $file = \Illuminate\Http\UploadedFile::fake()->image('avatar.jpg');
@@ -132,11 +132,11 @@ class UserServiceCachingTest extends TestCase
         try {
             $this->userService->uploadAvatar($this->user, $uploadData);
 
-            // Verify cache is invalidated
-            $this->assertNull(Cache::get($cacheKey));
+            // Verify cache is invalidated (need to use tags to check)
+            $this->assertNull(Cache::tags(['users'])->get($cacheKey));
         } catch (\Exception $e) {
             // If S3 fails, just verify cache was cleared before the error
-            $this->assertNull(Cache::get($cacheKey));
+            $this->assertNull(Cache::tags(['users'])->get($cacheKey));
         }
     }
 
@@ -148,7 +148,7 @@ class UserServiceCachingTest extends TestCase
 
         // Populate cache
         $this->userService->profile($this->user);
-        $this->assertNotNull(Cache::get($cacheKey));
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey));
 
         // Change password
         $passwordData = new \App\DTOs\User\Profile\ChangePasswordData(
@@ -164,8 +164,8 @@ class UserServiceCachingTest extends TestCase
             // Expected in unit tests without proper JWT setup
         }
 
-        // Verify cache is invalidated (this should happen before logout)
-        $this->assertNull(Cache::get($cacheKey));
+        // Verify cache is invalidated (this should happen before logout, need to use tags to check)
+        $this->assertNull(Cache::tags(['users'])->get($cacheKey));
     }
 
     public function test_profile_includes_roles_in_cache(): void
@@ -182,8 +182,8 @@ class UserServiceCachingTest extends TestCase
         $this->assertCount(1, $result->roles);
         $this->assertEquals('customer', $result->roles->first()->name);
 
-        // Verify cache contains loaded roles
-        $cachedData = Cache::get($cacheKey);
+        // Verify cache contains loaded roles (need to use tags to retrieve)
+        $cachedData = Cache::tags(['users'])->get($cacheKey);
         $this->assertTrue($cachedData->relationLoaded('roles'));
     }
 
@@ -195,8 +195,8 @@ class UserServiceCachingTest extends TestCase
 
         $this->userService->profile($this->user);
 
-        // Verify exact cache key format
-        $this->assertNotNull(Cache::get($cacheKey));
+        // Verify exact cache key format (need to use tags to check)
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey));
         $this->assertStringStartsWith('user:profile:', $cacheKey);
         $this->assertStringEndsWith((string)$this->user->id, $cacheKey);
     }
@@ -218,12 +218,12 @@ class UserServiceCachingTest extends TestCase
         $this->actingAsUser($user2);
         $this->userService->profile($user2);
 
-        // Verify both caches exist and are separate
-        $this->assertNotNull(Cache::get($cacheKey1));
-        $this->assertNotNull(Cache::get($cacheKey2));
+        // Verify both caches exist and are separate (need to use tags to check)
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey1));
+        $this->assertNotNull(Cache::tags(['users'])->get($cacheKey2));
         $this->assertNotEquals(
-            Cache::get($cacheKey1)->id,
-            Cache::get($cacheKey2)->id
+            Cache::tags(['users'])->get($cacheKey1)->id,
+            Cache::tags(['users'])->get($cacheKey2)->id
         );
     }
 }
