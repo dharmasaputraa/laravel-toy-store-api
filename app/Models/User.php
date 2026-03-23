@@ -14,15 +14,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject, MustVerifyEmail
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail, HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes, HasUuids;
-
-    protected $guard_name = 'api';
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, HasUuids, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -147,5 +148,20 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function is_customer(): bool
     {
         return $this->hasRole(RoleType::CUSTOMER->value);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->singleFile();
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return Cache::tags(['users', 'avatar'])->remember(
+            "user:avatar:{$this->id}",
+            now()->addHours(24),
+            fn() => $this->getFirstMediaUrl('avatar') ?: null
+        );
     }
 }

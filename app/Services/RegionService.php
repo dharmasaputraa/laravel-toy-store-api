@@ -9,36 +9,43 @@ use Illuminate\Support\Facades\Cache;
 class RegionService
 {
     /**
-     * Get all provinces with caching.
-     *
-     * @return Collection<int, Region>
+     * Waktu simpan cache (30 hari).
      */
+    protected int $cacheTtl = 60 * 60 * 24 * 30;
+
     public function getProvinces(): Collection
     {
-        $cacheKey = 'regions:provinces';
+        $cacheKey = 'provinces_all';
 
-        return Cache::remember($cacheKey, now()->addHour(), function () {
-            return Region::provinces()
-                ->orderBy('name')
-                ->get();
+        return Cache::tags(['regions', 'provinces'])->remember($cacheKey, $this->cacheTtl, function () {
+            return Region::provinces()->get();
         });
     }
 
-    /**
-     * Get cities by province code with caching.
-     *
-     * @param string $provinceCode
-     * @return Collection<int, Region>
-     */
     public function getCitiesByProvince(string $provinceCode): Collection
     {
-        $cacheKey = "regions:cities:{$provinceCode}";
+        $cacheKey = "cities_{$provinceCode}";
 
-        return Cache::remember($cacheKey, now()->addHour(), function () use ($provinceCode) {
-            return Region::cities()
-                ->where('parent_code', $provinceCode)
-                ->orderBy('name')
-                ->get();
+        return Cache::tags(['regions', 'cities'])->remember($cacheKey, $this->cacheTtl, function () use ($provinceCode) {
+            return Region::cities()->byParent($provinceCode)->get();
+        });
+    }
+
+    public function getDistrictsByCity(string $cityCode): Collection
+    {
+        $cacheKey = "districts_{$cityCode}";
+
+        return Cache::tags(['regions', 'districts'])->remember($cacheKey, $this->cacheTtl, function () use ($cityCode) {
+            return Region::districts()->byParent($cityCode)->get();
+        });
+    }
+
+    public function getVillagesByDistrict(string $districtCode): Collection
+    {
+        $cacheKey = "villages_{$districtCode}";
+
+        return Cache::tags(['regions', 'villages'])->remember($cacheKey, $this->cacheTtl, function () use ($districtCode) {
+            return Region::villages()->byParent($districtCode)->get();
         });
     }
 }

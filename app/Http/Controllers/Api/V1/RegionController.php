@@ -13,11 +13,6 @@ class RegionController extends BaseApiController
         protected RegionService $regionService
     ) {}
 
-    /**
-     * Get all provinces.
-     *
-     * @return JsonResponse
-     */
     public function index(): JsonResponse
     {
         $provinces = $this->regionService->getProvinces();
@@ -27,12 +22,6 @@ class RegionController extends BaseApiController
         );
     }
 
-    /**
-     * Get cities by province code.
-     *
-     * @param string $code
-     * @return JsonResponse
-     */
     public function cities(string $code): JsonResponse
     {
         $cities = $this->regionService->getCitiesByProvince($code);
