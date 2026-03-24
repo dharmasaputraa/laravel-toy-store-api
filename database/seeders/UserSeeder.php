@@ -26,6 +26,16 @@ class UserSeeder extends Seeder
         ]);
         $superAdmin->assignRole(RoleType::SUPER_ADMIN->value);
 
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'admin2@example.com',
+            'phone' => '081234567891',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $admin->assignRole(RoleType::ADMIN->value);
+
         // Create Test Customer
         $customer = User::create([
             'name' => 'Daren Customer',
