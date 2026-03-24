@@ -135,17 +135,17 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, HasMe
         return $this->hasRole(RoleType::SUPER_ADMIN->value);
     }
 
-    public function is_admin(): bool
+    public function isAdmin(): bool
     {
         return $this->hasRole(RoleType::ADMIN->value);
     }
 
-    public function is_warehouse(): bool
+    public function isWarehouse(): bool
     {
         return $this->hasRole(RoleType::WAREHOUSE->value);
     }
 
-    public function is_customer(): bool
+    public function isCustomer(): bool
     {
         return $this->hasRole(RoleType::CUSTOMER->value);
     }

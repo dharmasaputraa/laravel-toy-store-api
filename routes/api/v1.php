@@ -2,6 +2,7 @@
 
 use App\Enums\RoleType;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\RegionController;
@@ -127,5 +128,25 @@ Route::prefix('categories')->as('categories.')->group(function () {
         Route::patch('/{category}/parent', [CategoryController::class, 'updateParent'])->name('parent.update');
         Route::patch('/{category}/status', [CategoryController::class, 'updateStatus'])->name('status.update');
         Route::post('/{category}/image', [CategoryController::class, 'updateImage'])->name('image.update');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Brands (Public)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('brands')->as('brands.')->group(function () {
+
+    Route::get('/', [BrandController::class, 'index'])->name('index');
+    Route::get('/{brand}', [BrandController::class, 'show'])->name('show');
+
+    Route::middleware(['auth:api', 'verified', 'active', 'role:' . RoleType::SUPER_ADMIN->value])->group(function () { // Nanti Ganti dengan permission: manage-brands
+        Route::post('/', [BrandController::class, 'store'])->name('store');
+        Route::patch('/{brand}', [BrandController::class, 'update'])->name('update');
+        Route::delete('/{brand}', [BrandController::class, 'destroy'])->name('destroy');
+
+        Route::patch('/{brand}/status', [BrandController::class, 'updateStatus'])->name('status.update');
+        Route::post('/{brand}/logo', [BrandController::class, 'updateLogo'])->name('logo.update');
     });
 });
