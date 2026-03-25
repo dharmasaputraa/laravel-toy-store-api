@@ -1,5 +1,7 @@
 <?php
 
+namespace App\DTOs\Category;
+
 use Illuminate\Http\Request;
 
 readonly class UpdateParentData

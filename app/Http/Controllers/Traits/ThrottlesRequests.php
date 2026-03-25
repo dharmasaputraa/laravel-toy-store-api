@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace App\Controllers\Traits;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;

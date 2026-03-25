@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Traits\ApiResponse;
-use App\Traits\ThrottlesRequests;
+use App\Controllers\Traits\ApiResponse;
+use App\Controllers\Traits\ThrottlesRequests;
 use Illuminate\Support\Facades\Auth;
 
 class BaseApiController extends Controller

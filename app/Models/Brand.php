@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Traits\HasFlexibleRouteBinding;
+use App\Models\Traits\HasSlug;
+use App\Models\Traits\HasFlexibleRouteBinding;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Brand extends Model implements HasMedia
 {
-    use HasFactory, HasUuids, InteractsWithMedia, HasFlexibleRouteBinding;
+    use HasFactory, HasUuids, InteractsWithMedia, HasFlexibleRouteBinding, HasSlug;
 
     protected $fillable = [
         'name',
