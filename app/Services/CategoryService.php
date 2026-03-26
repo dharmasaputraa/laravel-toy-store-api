@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\Category\CategoryData;
 use App\Exceptions\CircularCategoryException;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -86,16 +87,22 @@ class CategoryService
         });
     }
 
-    public function getTree()
+    public function getTree(?string $sort = null)
     {
+        $cacheKey = 'category:tree:' . ($sort ?? 'default');
+
         return Cache::tags(['categories', 'tree'])->remember(
-            'category:tree',
+            $cacheKey,
             now()->addDay(),
-            function () {
-                return Category::with('childrenRecursive')
+            function () use ($sort) {
+                $query = Category::with('childrenRecursive')
                     ->whereNull('parent_id')
-                    ->orderBy('sort_order')
-                    ->get();
+                    ->withCount('products');
+
+                // Apply sorting to root level
+                $query = $this->applySorting($query, $sort);
+
+                return $query->get();
             }
         );
     }
@@ -121,5 +128,34 @@ class CategoryService
         }
 
         return false;
+    }
+
+    /**
+     * Apply sorting to category query
+     */
+    private function applySorting(Builder $query, ?string $sort): Builder
+    {
+        if (!$sort) {
+            return $query->orderBy('sort_order');
+        }
+
+        $sortFields = explode(',', $sort);
+
+        foreach ($sortFields as $field) {
+            $direction = str_starts_with($field, '-') ? 'desc' : 'asc';
+            $fieldName = ltrim($field, '-');
+
+            // Validate allowed fields
+            if (in_array($fieldName, ['name', 'created_at', 'products_count'])) {
+                $query->orderBy($fieldName, $direction);
+            }
+        }
+
+        // Fallback to sort_order if no valid fields
+        if (empty($query->orders)) {
+            $query->orderBy('sort_order');
+        }
+
+        return $query;
     }
 }

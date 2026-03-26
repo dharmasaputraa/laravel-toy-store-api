@@ -19,6 +19,7 @@ class CategoryResource extends JsonResource
             'sort_order' => $this->sort_order,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at,
+            'products_count' => $this->whenCounted('products_count'),
 
             'children' => CategoryResource::collection(
                 $this->whenLoaded('childrenRecursive')

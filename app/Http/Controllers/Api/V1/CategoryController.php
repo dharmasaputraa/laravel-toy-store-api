@@ -97,7 +97,8 @@ class CategoryController extends BaseApiController
 
     public function tree(): JsonResponse
     {
-        $categories = $this->service->getTree();
+        $sort = request()->input('sort');
+        $categories = $this->service->getTree($sort);
 
         return $this->successResponse(
             CategoryResource::collection($categories),

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class UserServiceCachingTest extends TestCase
@@ -21,6 +22,9 @@ class UserServiceCachingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Fake storage for avatar uploads
+        Storage::fake('s3');
 
         $this->userService = app(UserService::class);
         $this->user = User::factory()->create(['password' => bcrypt('password')]);
@@ -127,17 +131,11 @@ class UserServiceCachingTest extends TestCase
             avatar: $file
         );
 
-        // Note: This test may fail if S3 is not configured,
-        // but the cache invalidation logic should still work
-        try {
-            $this->userService->uploadAvatar($this->user, $uploadData);
+        // Upload avatar (storage is faked in setUp)
+        $this->userService->uploadAvatar($this->user, $uploadData);
 
-            // Verify cache is invalidated (need to use tags to check)
-            $this->assertNull(Cache::tags(['users'])->get($cacheKey));
-        } catch (\Exception $e) {
-            // If S3 fails, just verify cache was cleared before the error
-            $this->assertNull(Cache::tags(['users'])->get($cacheKey));
-        }
+        // Verify cache is invalidated
+        $this->assertNull(Cache::tags(['users'])->get($cacheKey));
     }
 
     public function test_change_password_invalidates_cache(): void

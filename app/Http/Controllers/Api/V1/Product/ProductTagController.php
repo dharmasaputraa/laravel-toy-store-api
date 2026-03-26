@@ -1,46 +1,44 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\V1\Product;
 
 use App\Http\Controllers\Api\BaseApiController;
-use App\Http\Requests\V1\Brand\StoreBrandRequest;
-use App\Http\Requests\V1\Brand\UpdateBrandRequest;
-use App\Http\Requests\V1\Brand\UpdateBrandStatusRequest;
-use App\Http\Requests\V1\Brand\UploadBrandLogoRequest;
-use App\Http\Resources\V1\Brand\BrandResource;
+use App\Http\Requests\V1\ProductTag\StoreProductTagRequest;
+use App\Http\Requests\V1\ProductTag\UpdateProductTagRequest;
+use App\Http\Resources\V1\ProductTag\ProductTagResource;
 use App\Http\Resources\V1\Product\ProductListResource;
-use App\Models\Brand;
-use App\Services\BrandService;
-use App\DTOs\Brand\BrandData;
+use App\Models\ProductTag;
+use App\Services\ProductTagService;
+use App\DTOs\ProductTag\ProductTagData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class BrandController extends BaseApiController
+class ProductTagController extends BaseApiController
 {
     public function __construct(
-        protected BrandService $service
+        protected ProductTagService $service
     ) {}
 
     /**
-     * GET /brands - List all brands with pagination and sorting (Public)
+     * GET /api/tags - List all product tags with pagination and sorting
      */
     public function index(Request $request): JsonResponse
     {
         $perPage = min((int) $request->input('per_page', 15), 100);
         $sort = $request->input('sort');
 
-        $brands = $this->service->getAll($perPage, $sort);
+        $tags = $this->service->getAll($perPage, $sort);
 
         return $this->successResponse(
-            BrandResource::collection($brands),
-            'Brands fetched'
+            ProductTagResource::collection($tags),
+            'Product tags fetched'
         );
     }
 
     /**
-     * GET /brands/{brand} - Show single brand with optional includes (Public)
+     * GET /api/tags/{tag} - Show single product tag with optional includes
      */
-    public function show(Request $request, Brand $brand): JsonResponse
+    public function show(Request $request, ProductTag $productTag): JsonResponse
     {
         // Parse includes (comma-separated, supports nested)
         $includes = explode(',', $request->input('include', ''));
@@ -54,30 +52,30 @@ class BrandController extends BaseApiController
         // Validate and limit products (default 5, max 20)
         $productsLimit = min((int) $request->input('products_limit', 5), 20);
 
-        $brand = $this->service->getById(
-            $brand->id,
+        $tag = $this->service->getById(
+            $productTag->id,
             $includeProducts,
             $nestedIncludes,
             $productsLimit
         );
 
         return $this->successResponse(
-            new BrandResource($brand),
-            'Brand fetched'
+            new ProductTagResource($tag),
+            'Product tag fetched'
         );
     }
 
     /**
-     * GET /brands/{brand}/products - Get paginated products for a brand (Public)
+     * GET /api/tags/{tag}/products - Get paginated products for a tag
      */
-    public function products(Request $request, Brand $brand): JsonResponse
+    public function products(Request $request, ProductTag $productTag): JsonResponse
     {
         $perPage = min((int) $request->input('per_page', 15), 100);
         $sort = $request->input('sort');
         $includes = explode(',', $request->input('include', ''));
 
         $products = $this->service->getProducts(
-            $brand->id,
+            $productTag->id,
             $perPage,
             $sort,
             $includes
@@ -110,65 +108,48 @@ class BrandController extends BaseApiController
         ]);
     }
 
-    public function store(StoreBrandRequest $request): JsonResponse
+    /**
+     * POST /api/tags - Create new product tag (admin only)
+     */
+    public function store(StoreProductTagRequest $request): JsonResponse
     {
-        $brand = $this->service->store(
-            BrandData::fromRequest($request)
+        $tag = $this->service->store(
+            ProductTagData::fromRequest($request)
         );
 
         return $this->successResponse(
-            new BrandResource($brand),
-            'Brand created',
+            new ProductTagResource($tag),
+            'Product tag created',
             201
         );
     }
 
-    public function update(UpdateBrandRequest $request, Brand $brand): JsonResponse
+    /**
+     * PATCH /api/tags/{tag} - Update product tag (admin only)
+     */
+    public function update(UpdateProductTagRequest $request, ProductTag $productTag): JsonResponse
     {
-        $brand = $this->service->update(
-            $brand,
-            BrandData::fromRequest($request)
+        $tag = $this->service->update(
+            $productTag,
+            ProductTagData::fromRequest($request)
         );
 
         return $this->successResponse(
-            new BrandResource($brand),
-            'Brand updated'
+            new ProductTagResource($tag),
+            'Product tag updated'
         );
     }
 
-    public function updateStatus(UpdateBrandStatusRequest $request, Brand $brand): JsonResponse
+    /**
+     * DELETE /api/tags/{tag} - Delete product tag (admin only)
+     */
+    public function destroy(ProductTag $productTag): JsonResponse
     {
-        $brand = $this->service->updateStatus(
-            $brand,
-            $request->is_active
-        );
-
-        return $this->successResponse(
-            new BrandResource($brand),
-            'Brand status updated'
-        );
-    }
-
-    public function updateLogo(UploadBrandLogoRequest $request, Brand $brand): JsonResponse
-    {
-        $brand = $this->service->updateLogo(
-            $brand,
-            $request->file('logo')
-        );
-
-        return $this->successResponse(
-            new BrandResource($brand),
-            'Brand logo updated'
-        );
-    }
-
-    public function destroy(Brand $brand): JsonResponse
-    {
-        $this->service->delete($brand);
+        $this->service->delete($productTag);
 
         return $this->successResponse(
             null,
-            'Brand deleted'
+            'Product tag deleted'
         );
     }
 }
