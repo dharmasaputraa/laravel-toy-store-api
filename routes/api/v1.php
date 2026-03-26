@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\Product\ProductTagController;
 use App\Http\Controllers\Api\V1\RegionController;
 use App\Http\Controllers\Api\V1\UserAddressController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -148,5 +149,24 @@ Route::prefix('brands')->as('brands.')->group(function () {
 
         Route::patch('/{brand}/status', [BrandController::class, 'updateStatus'])->name('status.update');
         Route::post('/{brand}/logo', [BrandController::class, 'updateLogo'])->name('logo.update');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Product Tags (Public)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('tags')->as('tags.')->group(function () {
+    // Public endpoints
+    Route::get('/', [ProductTagController::class, 'index'])->name('index');
+    Route::get('/{productTag}', [ProductTagController::class, 'show'])->name('show');
+    Route::get('/{productTag}/products', [ProductTagController::class, 'products'])->name('products');
+
+    // Admin endpoints
+    Route::middleware(['auth:api', 'verified', 'active', 'role:' . RoleType::SUPER_ADMIN->value])->group(function () { // Nanti Ganti dengan permission: manage-product-tags
+        Route::post('/', [ProductTagController::class, 'store'])->name('store');
+        Route::patch('/{productTag}', [ProductTagController::class, 'update'])->name('update');
+        Route::delete('/{productTag}', [ProductTagController::class, 'destroy'])->name('destroy');
     });
 });
