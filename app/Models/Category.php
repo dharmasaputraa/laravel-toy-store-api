@@ -51,6 +51,11 @@ class Category extends Model implements HasMedia
         return $this->children()->with('childrenRecursive');
     }
 
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function getImageUrlAttribute(): ?string
     {
         return Cache::tags(['categories', 'image'])->remember(
@@ -58,5 +63,16 @@ class Category extends Model implements HasMedia
             now()->addDay(),
             fn() => $this->getFirstMediaUrl('image') ?: null
         );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

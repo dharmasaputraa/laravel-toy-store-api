@@ -4,6 +4,9 @@ namespace Tests\Feature\Api\V1;
 
 use App\Enums\RoleType;
 use App\Models\Brand;
+use App\Models\Product;
+use App\Models\ProductTag;
+use App\Models\ProductVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -581,5 +584,304 @@ class BrandTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         $this->assertEquals($brand->id, $data['id']);
+    }
+
+    /**
+     * INDEX - Pagination and Sorting
+     */
+    public function test_index_supports_pagination(): void
+    {
+        Brand::factory()->count(20)->create(['is_active' => true]);
+
+        $response = $this->getJson(route('v1.brands.index') . '?per_page=10');
+
+        $response->assertOk();
+
+        $data = $response->json('data');
+        $this->assertCount(10, $data);
+    }
+
+    public function test_index_supports_sorting_asc(): void
+    {
+        Brand::factory()->create(['name' => 'Charlie', 'is_active' => true]);
+        Brand::factory()->create(['name' => 'Alpha', 'is_active' => true]);
+        Brand::factory()->create(['name' => 'Bravo', 'is_active' => true]);
+
+        $response = $this->getJson(route('v1.brands.index') . '?sort=name');
+
+        $data = $response->json('data');
+
+        $this->assertEquals('Alpha', $data[0]['name']);
+        $this->assertEquals('Bravo', $data[1]['name']);
+        $this->assertEquals('Charlie', $data[2]['name']);
+    }
+
+    public function test_index_supports_sorting_desc(): void
+    {
+        Brand::factory()->create(['name' => 'Alpha', 'is_active' => true]);
+        Brand::factory()->create(['name' => 'Bravo', 'is_active' => true]);
+        Brand::factory()->create(['name' => 'Charlie', 'is_active' => true]);
+
+        $response = $this->getJson(route('v1.brands.index') . '?sort=-name');
+
+        $data = $response->json('data');
+
+        $this->assertEquals('Charlie', $data[0]['name']);
+        $this->assertEquals('Bravo', $data[1]['name']);
+        $this->assertEquals('Alpha', $data[2]['name']);
+    }
+
+    public function test_index_supports_multiple_sort_fields(): void
+    {
+        $brand1 = Brand::factory()->create(['name' => 'Same Name', 'is_active' => true]);
+        $brand2 = Brand::factory()->create(['name' => 'Same Name', 'is_active' => true]);
+
+        $response = $this->getJson(route('v1.brands.index') . '?sort=name,-created_at');
+
+        $response->assertOk();
+    }
+
+    public function test_index_returns_products_count(): void
+    {
+        $brand1 = Brand::factory()->create(['name' => 'Brand A', 'is_active' => true]);
+        $brand2 = Brand::factory()->create(['name' => 'Brand B', 'is_active' => true]);
+
+        Product::factory()->count(5)->create(['brand_id' => $brand1->id]);
+        Product::factory()->count(2)->create(['brand_id' => $brand2->id]);
+
+        $response = $this->getJson(route('v1.brands.index'));
+
+        $data = $response->json('data');
+        $this->assertArrayHasKey('products_count', $data[0]);
+        $this->assertArrayHasKey('products_count', $data[1]);
+    }
+
+    /**
+     * SHOW - Products Include
+     */
+    public function test_show_includes_products_with_default_limit(): void
+    {
+        $brand = Brand::factory()->create();
+        Product::factory()->count(10)->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.show', $brand) . '?include=products');
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('products', $data);
+        $this->assertCount(5, $data['products']); // Default limit is 5
+    }
+
+    public function test_show_includes_products_with_custom_limit(): void
+    {
+        $brand = Brand::factory()->create();
+        Product::factory()->count(10)->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.show', $brand) . '?include=products&products_limit=8');
+
+        $data = $response->json('data');
+
+        $this->assertCount(8, $data['products']);
+    }
+
+    public function test_show_limits_products_to_maximum(): void
+    {
+        $brand = Brand::factory()->create();
+        Product::factory()->count(30)->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.show', $brand) . '?include=products&products_limit=100');
+
+        $data = $response->json('data');
+
+        $this->assertCount(20, $data['products']); // Max limit is 20
+    }
+
+    public function test_show_includes_products_with_nested_category(): void
+    {
+        $brand = Brand::factory()->create();
+        $product = Product::factory()->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.show', $brand) . '?include=products,products.category');
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('products', $data);
+        $this->assertArrayHasKey('category', $data['products'][0]);
+    }
+
+    public function test_show_includes_products_with_nested_brand(): void
+    {
+        $brand = Brand::factory()->create();
+        $product = Product::factory()->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.show', $brand) . '?include=products,products.brand');
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('brand', $data['products'][0]);
+    }
+
+    public function test_show_does_not_include_products_when_not_requested(): void
+    {
+        $brand = Brand::factory()->create();
+        Product::factory()->count(3)->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.show', $brand));
+
+        $data = $response->json('data');
+
+        $this->assertArrayNotHasKey('products', $data);
+    }
+
+    public function test_show_products_are_limited_to_latest(): void
+    {
+        $brand = Brand::factory()->create();
+        $products = Product::factory()->count(5)->create(['brand_id' => $brand->id]);
+
+        sleep(1);
+        $newestProduct = Product::factory()->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.show', $brand) . '?include=products');
+
+        $data = $response->json('data');
+
+        $this->assertCount(5, $data['products']);
+        $this->assertEquals($newestProduct->id, $data['products'][0]['id']);
+    }
+
+    /**
+     * PRODUCTS - Get paginated products for a brand (Public)
+     */
+    public function test_products_returns_paginated_products_for_brand(): void
+    {
+        $brand = Brand::factory()->create();
+        Product::factory()->count(15)->active()->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.products', $brand));
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'data' => [
+                        '*' => [
+                            'id',
+                            'name',
+                            'slug',
+                            'sku',
+                            'short_description',
+                            'category',
+                            'brand',
+                        ],
+                    ],
+                    'links',
+                    'meta',
+                ],
+            ]);
+
+        $data = $response->json('data');
+        $this->assertCount(15, $data['data']);
+    }
+
+    public function test_products_supports_pagination(): void
+    {
+        $brand = Brand::factory()->create();
+        Product::factory()->count(25)->active()->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.products', $brand) . '?per_page=10');
+
+        $data = $response->json('data');
+
+        $this->assertCount(10, $data['data']);
+        $this->assertEquals(25, $data['meta']['total']);
+        $this->assertEquals(3, $data['meta']['last_page']);
+    }
+
+    public function test_products_includes_category_and_brand_by_default(): void
+    {
+        $brand = Brand::factory()->create();
+        $product = Product::factory()->active()->create(['brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.products', $brand));
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('category', $data['data'][0]);
+        $this->assertArrayHasKey('brand', $data['data'][0]);
+    }
+
+    public function test_products_can_include_tags(): void
+    {
+        $brand = Brand::factory()->create();
+        $product = Product::factory()->create(['brand_id' => $brand->id]);
+        $tag = ProductTag::factory()->create();
+        $product->tags()->attach($tag->id);
+
+        $response = $this->getJson(route('v1.brands.products', $brand) . '?include=tags');
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('tags', $data['data'][0]);
+    }
+
+    public function test_products_can_include_variants(): void
+    {
+        $brand = Brand::factory()->create();
+        $product = Product::factory()->active()->create(['brand_id' => $brand->id]);
+        ProductVariant::factory()->count(2)->create(['product_id' => $product->id]);
+
+        $response = $this->getJson(route('v1.brands.products', $brand) . '?include=variants');
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('variants', $data['data'][0]);
+        $this->assertCount(2, $data['data'][0]['variants']);
+    }
+
+    public function test_products_supports_sorting(): void
+    {
+        $brand = Brand::factory()->create();
+        Product::factory()->active()->create(['name' => 'Zebra Product', 'brand_id' => $brand->id]);
+        Product::factory()->active()->create(['name' => 'Alpha Product', 'brand_id' => $brand->id]);
+        Product::factory()->active()->create(['name' => 'Beta Product', 'brand_id' => $brand->id]);
+
+        $response = $this->getJson(route('v1.brands.products', $brand) . '?sort=name');
+
+        $data = $response->json('data');
+
+        $this->assertEquals('Alpha Product', $data['data'][0]['name']);
+        $this->assertEquals('Beta Product', $data['data'][1]['name']);
+        $this->assertEquals('Zebra Product', $data['data'][2]['name']);
+    }
+
+    public function test_products_returns_empty_when_no_products_for_brand(): void
+    {
+        $brand = Brand::factory()->create();
+
+        $response = $this->getJson(route('v1.brands.products', $brand));
+
+        $response->assertOk();
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('data', $data);
+        $this->assertArrayHasKey('meta', $data);
+        $this->assertArrayHasKey('links', $data);
+        $this->assertEmpty($data['data']);
+        $this->assertEquals(0, $data['meta']['total']);
+    }
+
+    /**
+     * Products count handling
+     */
+    public function test_products_count_defaults_to_zero_when_no_products(): void
+    {
+        $brand = Brand::factory()->create();
+
+        $response = $this->getJson(route('v1.brands.show', $brand));
+
+        $data = $response->json('data');
+        $this->assertEquals(0, $data['products_count']);
     }
 }

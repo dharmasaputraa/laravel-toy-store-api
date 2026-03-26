@@ -142,6 +142,139 @@ class CategoryTest extends TestCase
         $this->assertEquals($response1->json(), $response2->json());
     }
 
+    public function test_tree_sorts_by_name_ascending(): void
+    {
+        Category::factory()->create(['name' => 'Zebra']);
+        Category::factory()->create(['name' => 'Alpha']);
+        Category::factory()->create(['name' => 'Beta']);
+
+        $response = $this->getJson(route('v1.categories.tree') . '?sort=name');
+
+        $data = $response->json('data');
+
+        $this->assertEquals('Alpha', $data[0]['name']);
+        $this->assertEquals('Beta', $data[1]['name']);
+        $this->assertEquals('Zebra', $data[2]['name']);
+    }
+
+    public function test_tree_sorts_by_name_descending(): void
+    {
+        Category::factory()->create(['name' => 'Zebra']);
+        Category::factory()->create(['name' => 'Alpha']);
+        Category::factory()->create(['name' => 'Beta']);
+
+        $response = $this->getJson(route('v1.categories.tree') . '?sort=-name');
+
+        $data = $response->json('data');
+
+        $this->assertEquals('Zebra', $data[0]['name']);
+        $this->assertEquals('Beta', $data[1]['name']);
+        $this->assertEquals('Alpha', $data[2]['name']);
+    }
+
+    public function test_tree_sorts_by_created_at_ascending(): void
+    {
+        $old = Category::factory()->create(['created_at' => now()->subDays(3)]);
+        $new = Category::factory()->create(['created_at' => now()->subDays(1)]);
+        $middle = Category::factory()->create(['created_at' => now()->subDays(2)]);
+
+        $response = $this->getJson(route('v1.categories.tree') . '?sort=created_at');
+
+        $data = $response->json('data');
+
+        $this->assertEquals($old->id, $data[0]['id']);
+        $this->assertEquals($middle->id, $data[1]['id']);
+        $this->assertEquals($new->id, $data[2]['id']);
+    }
+
+    public function test_tree_sorts_by_created_at_descending(): void
+    {
+        $old = Category::factory()->create(['created_at' => now()->subDays(3)]);
+        $new = Category::factory()->create(['created_at' => now()->subDays(1)]);
+        $middle = Category::factory()->create(['created_at' => now()->subDays(2)]);
+
+        $response = $this->getJson(route('v1.categories.tree') . '?sort=-created_at');
+
+        $data = $response->json('data');
+
+        $this->assertEquals($new->id, $data[0]['id']);
+        $this->assertEquals($middle->id, $data[1]['id']);
+        $this->assertEquals($old->id, $data[2]['id']);
+    }
+
+    public function test_tree_sorts_by_products_count(): void
+    {
+        $category1 = Category::factory()->create(['name' => 'Cat1']);
+        $category2 = Category::factory()->create(['name' => 'Cat2']);
+        $category3 = Category::factory()->create(['name' => 'Cat3']);
+
+        // Create products for each category
+        \App\Models\Product::factory()->count(5)->create(['category_id' => $category1->id]);
+        \App\Models\Product::factory()->count(2)->create(['category_id' => $category2->id]);
+        \App\Models\Product::factory()->count(10)->create(['category_id' => $category3->id]);
+
+        $response = $this->getJson(route('v1.categories.tree') . '?sort=-products_count');
+
+        $data = $response->json('data');
+
+        $this->assertEquals('Cat3', $data[0]['name']);
+        $this->assertEquals(10, $data[0]['products_count']);
+        $this->assertEquals('Cat1', $data[1]['name']);
+        $this->assertEquals(5, $data[1]['products_count']);
+        $this->assertEquals('Cat2', $data[2]['name']);
+        $this->assertEquals(2, $data[2]['products_count']);
+    }
+
+    public function test_tree_sorts_by_multiple_fields(): void
+    {
+        Category::factory()->create(['name' => 'Beta', 'sort_order' => 2]);
+        Category::factory()->create(['name' => 'Alpha', 'sort_order' => 1]);
+        Category::factory()->create(['name' => 'Alpha', 'sort_order' => 2]);
+
+        $response = $this->getJson(route('v1.categories.tree') . '?sort=name,sort_order');
+
+        $data = $response->json('data');
+
+        // First by name (Alpha comes first), then by sort_order
+        $this->assertEquals('Alpha', $data[0]['name']);
+        $this->assertEquals(1, $data[0]['sort_order']);
+        $this->assertEquals('Alpha', $data[1]['name']);
+        $this->assertEquals(2, $data[1]['sort_order']);
+        $this->assertEquals('Beta', $data[2]['name']);
+    }
+
+    public function test_tree_includes_products_count(): void
+    {
+        $category = Category::factory()->create();
+        \App\Models\Product::factory()->count(3)->create(['category_id' => $category->id]);
+
+        $response = $this->getJson(route('v1.categories.tree'));
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('products_count', $data[0]);
+        $this->assertEquals(3, $data[0]['products_count']);
+    }
+
+    public function test_tree_sorts_children_recursively(): void
+    {
+        $parent = Category::factory()->create(['name' => 'Parent']);
+        $child3 = Category::factory()->create(['name' => 'Child3', 'parent_id' => $parent->id, 'sort_order' => 3]);
+        $child1 = Category::factory()->create(['name' => 'Child1', 'parent_id' => $parent->id, 'sort_order' => 1]);
+        $child2 = Category::factory()->create(['name' => 'Child2', 'parent_id' => $parent->id, 'sort_order' => 2]);
+
+        $response = $this->getJson(route('v1.categories.tree') . '?sort=name');
+
+        $data = $response->json('data');
+
+        $this->assertCount(1, $data);
+        $this->assertCount(3, $data[0]['children']);
+        // Children are sorted by sort_order (from childrenRecursive relationship)
+        $this->assertEquals('Child1', $data[0]['children'][0]['name']);
+        $this->assertEquals('Child2', $data[0]['children'][1]['name']);
+        $this->assertEquals('Child3', $data[0]['children'][2]['name']);
+    }
+
     public function test_tree_excludes_deleted_categories(): void
     {
         $root = Category::factory()->create();

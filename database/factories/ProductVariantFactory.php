@@ -22,20 +22,22 @@ class ProductVariantFactory extends Factory
     {
         $price = fake()->numberBetween(50000, 500000); // 50k - 500k IDR
 
+        $attributes = fake()->randomElement([
+            ['color' => fake()->colorName()],
+            ['size' => fake()->randomElement(['S', 'M', 'L', 'XL', 'XXL'])],
+            ['color' => fake()->colorName(), 'size' => fake()->randomElement(['S', 'M', 'L'])],
+            ['material' => fake()->word()],
+            ['color' => fake()->colorName(), 'size' => fake()->randomElement(['S', 'M', 'L']), 'material' => fake()->word()],
+        ]);
+
         return [
             'product_id' => Product::inRandomOrder()->first()?->id,
-            'sku' => null, // Will be auto-generated
+            'sku' => $this->generateSkuForFactory($attributes),
             'name' => fake()->word(),
             'price' => $price,
             'compare_price' => fake()->optional(30)->numberBetween($price * 1.1, $price * 1.5),
             'stock' => fake()->numberBetween(0, 100),
-            'attributes' => fake()->randomElement([
-                ['color' => fake()->colorName()],
-                ['size' => fake()->randomElement(['S', 'M', 'L', 'XL', 'XXL'])],
-                ['color' => fake()->colorName(), 'size' => fake()->randomElement(['S', 'M', 'L'])],
-                ['material' => fake()->word()],
-                ['color' => fake()->colorName(), 'size' => fake()->randomElement(['S', 'M', 'L']), 'material' => fake()->word()],
-            ]),
+            'attributes' => $attributes,
             'is_active' => fake()->boolean(85), // 85% chance of being active
         ];
     }
@@ -111,5 +113,20 @@ class ProductVariantFactory extends Factory
                 'compare_price' => fake()->numberBetween($price * 1.1, $price * 1.5),
             ];
         });
+    }
+
+    /**
+     * Generate SKU for factory use.
+     */
+    protected function generateSkuForFactory(array $attributes): string
+    {
+        $attributesPart = collect($attributes)
+            ->values()
+            ->map(fn($v) => strtoupper(Str::slug($v)))
+            ->join('-');
+
+        $random = strtoupper(Str::random(4));
+
+        return trim("VARIANT-{$attributesPart}-{$random}", '-');
     }
 }

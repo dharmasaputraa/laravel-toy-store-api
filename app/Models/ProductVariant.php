@@ -27,6 +27,7 @@ class ProductVariant extends Model
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'attributes' => 'array',
         'price' => MoneyCast::class,
         'compare_price' => MoneyCast::class,
@@ -87,7 +88,8 @@ class ProductVariant extends Model
     */
     protected static function generateSku(self $variant): string
     {
-        $product = $variant->product;
+        // Get product - load from DB if not already loaded
+        $product = $variant->product ?? Product::find($variant->product_id);
 
         $base = $product
             ? strtoupper(substr($product->slug, 0, 5))
@@ -117,5 +119,16 @@ class ProductVariant extends Model
         ksort($attributes);
 
         return $attributes;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

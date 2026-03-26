@@ -28,6 +28,11 @@ class Product extends Model
         'is_featured',
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+
     /*
     |--------------------------------------------------------------------------
     | RELATIONS
@@ -52,5 +57,26 @@ class Product extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeByCategory($query, $categoryId)
+    {
+        return $query->where('category_id', $categoryId);
+    }
+
+    public function scopeByBrand($query, $brandId)
+    {
+        return $query->where('brand_id', $brandId);
     }
 }

@@ -141,6 +141,7 @@ Route::prefix('brands')->as('brands.')->group(function () {
 
     Route::get('/', [BrandController::class, 'index'])->name('index');
     Route::get('/{brand}', [BrandController::class, 'show'])->name('show');
+    Route::get('/{brand}/products', [BrandController::class, 'products'])->name('products');
 
     Route::middleware(['auth:api', 'verified', 'active', 'role:' . RoleType::SUPER_ADMIN->value])->group(function () { // Nanti Ganti dengan permission: manage-brands
         Route::post('/', [BrandController::class, 'store'])->name('store');

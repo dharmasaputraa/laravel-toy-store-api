@@ -3,10 +3,17 @@
 namespace Tests\Feature\Api\V1\Health;
 
 use App\Enums\RoleType;
+use Illuminate\Support\Facades\Storage;
 use Tests\Feature\Api\V1\Auth\AuthTestCase;
 
 class HealthTest extends AuthTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('s3');
+    }
+
     public function test_basic_health_success(): void
     {
         $this->getJson(route('v1.health.basic'))
