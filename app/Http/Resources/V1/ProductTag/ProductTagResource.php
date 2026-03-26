@@ -16,9 +16,9 @@ class ProductTagResource extends JsonResource
             'slug' => $this->slug,
             'products_count' => $this->products_count ?? 0,
             'created_at' => $this->created_at,
-            'products' => ProductListResource::collection(
-                $this->whenLoaded('products')
-            ),
+            'products' => $this->whenLoaded('products', function () {
+                return ProductListResource::collection($this->products);
+            }),
         ];
     }
 }

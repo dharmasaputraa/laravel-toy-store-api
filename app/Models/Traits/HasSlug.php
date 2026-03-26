@@ -9,7 +9,8 @@ trait HasSlug
     protected static function bootHasSlug()
     {
         static::saving(function ($model) {
-            if (!$model->slug || $model->isDirty('name')) {
+            // Only auto-generate slug if it's not provided
+            if (empty($model->slug)) {
                 $model->slug = static::generateUniqueSlug($model->name);
             }
         });

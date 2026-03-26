@@ -81,10 +81,31 @@ class ProductTagController extends BaseApiController
             $includes
         );
 
-        return $this->successResponse(
-            ProductListResource::collection($products),
-            'Products fetched'
-        );
+        $resource = ProductListResource::collection($products);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Products fetched',
+            'data' => [
+                'data' => $resource->collection->toArray($request),
+                'links' => [
+                    'first' => $products->url(1),
+                    'last' => $products->url($products->lastPage()),
+                    'prev' => $products->previousPageUrl(),
+                    'next' => $products->nextPageUrl(),
+                ],
+                'meta' => [
+                    'current_page' => $products->currentPage(),
+                    'from' => $products->firstItem(),
+                    'last_page' => $products->lastPage(),
+                    'links' => $products->getUrlRange(1, $products->lastPage()),
+                    'path' => $products->path(),
+                    'per_page' => $products->perPage(),
+                    'to' => $products->lastItem(),
+                    'total' => $products->total(),
+                ],
+            ],
+        ]);
     }
 
     /**

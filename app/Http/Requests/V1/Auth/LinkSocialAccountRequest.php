@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\V1\Auth;
 
+use App\Http\Controllers\Traits\ApiResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use App\Traits\ApiResponse;
 
 class LinkSocialAccountRequest extends FormRequest
 {

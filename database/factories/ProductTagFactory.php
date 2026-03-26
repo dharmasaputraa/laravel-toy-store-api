@@ -1,0 +1,39 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\ProductTag;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+
+/**
+ * @extends Factory<ProductTag>
+ */
+class ProductTagFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        $name = fake()->word();
+
+        return [
+            'name' => $name,
+            'slug' => Str::slug($name),
+        ];
+    }
+
+    /**
+     * Create a product tag with specific name.
+     */
+    public function withName(string $name): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'name' => $name,
+            'slug' => Str::slug($name),
+        ]);
+    }
+}

@@ -14,65 +14,30 @@ class ProductTagSeeder extends Seeder
      */
     public function run(): void
     {
+        // Predefined tags
         $tags = [
-            [
-                'name' => 'New Arrival',
-                'slug' => 'new-arrival',
-            ],
-            [
-                'name' => 'Best Seller',
-                'slug' => 'best-seller',
-            ],
-            [
-                'name' => 'Limited Edition',
-                'slug' => 'limited-edition',
-            ],
-            [
-                'name' => 'Popular',
-                'slug' => 'popular',
-            ],
-            [
-                'name' => 'On Sale',
-                'slug' => 'on-sale',
-            ],
-            [
-                'name' => 'Trending',
-                'slug' => 'trending',
-            ],
-            [
-                'name' => 'Exclusive',
-                'slug' => 'exclusive',
-            ],
-            [
-                'name' => 'Premium',
-                'slug' => 'premium',
-            ],
-            [
-                'name' => 'Budget Friendly',
-                'slug' => 'budget-friendly',
-            ],
-            [
-                'name' => 'Gift Idea',
-                'slug' => 'gift-idea',
-            ],
-            [
-                'name' => 'Educational',
-                'slug' => 'educational',
-            ],
-            [
-                'name' => 'Collectible',
-                'slug' => 'collectible',
-            ],
+            'New Arrival',
+            'Best Seller',
+            'Limited Edition',
+            'Popular',
+            'On Sale',
+            'Trending',
+            'Exclusive',
+            'Premium',
+            'Budget Friendly',
+            'Gift Idea',
+            'Educational',
+            'Collectible',
         ];
 
-        foreach ($tags as $tag) {
-            ProductTag::create([
-                'name' => $tag['name'],
-                'slug' => $tag['slug'],
-            ]);
+        foreach ($tags as $tagName) {
+            ProductTag::factory()->withName($tagName)->create();
 
-            // $this->command->info("Created product tag: {$tag['name']}");
+            // $this->command->info("Created product tag: {$tagName}");
         }
+
+        // Optionally add some random tags
+        // ProductTag::factory()->count(5)->create();
 
         // $this->command->info('Product tag seeding completed!');
     }

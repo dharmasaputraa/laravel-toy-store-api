@@ -5,6 +5,7 @@ namespace App\Http\Resources\V1\Product;
 use App\Http\Resources\V1\Category\CategoryResource;
 use App\Http\Resources\V1\Brand\BrandResource;
 use App\Http\Resources\V1\ProductTag\ProductTagResource;
+use App\Http\Resources\V1\ProductVariant\ProductVariantResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -31,10 +32,13 @@ class ProductListResource extends JsonResource
             'brand' => $this->whenLoaded('brand', function () {
                 return new BrandResource($this->brand);
             }),
-            'tags' => ProductTagResource::collection(
-                $this->whenLoaded('tags')
-            ),
-            // No variants, no description (lightweight)
+            'tags' => $this->whenLoaded('tags', function () {
+                return ProductTagResource::collection($this->tags);
+            }),
+            'variants' => $this->whenLoaded('variants', function () {
+                return ProductVariantResource::collection($this->variants);
+            }),
+            // No description (lightweight)
         ];
     }
 }
